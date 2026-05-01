@@ -1,11 +1,1486 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#FDF3D1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="人情簿">
+    <link rel="manifest" href="data:application/json,{}">
+    <title>人情簿 · 人情账本</title>
+    <!-- SheetJS用于Excel导入导出 -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js">
+    </script>
+    <style>
+        :root {
+            --cream: #FDF3D1;
+            --cream-dark: #F5E4B7;
+            --cream-darker: #E8D5A0;
+            --burgundy: #722F37;
+            --burgundy-light: #8B3A44;
+            --burgundy-dark: #5A1F26;
+            --ink: #3C2415;
+            --ink-light: #6B4D3A;
+            --ink-faded: #9B7D6A;
+            --paper: #FBF7EC;
+            --paper-white: #FFFEF9;
+            --gold: #C9A96E;
+            --gold-light: #DFC89D;
+            --success: #5D7A4A;
+            --danger: #A8423A;
+            --shadow-soft: 0 2px 12px rgba(60, 36, 21, 0.08);
+            --shadow-medium: 0 4px 20px rgba(60, 36, 21, 0.13);
+            --shadow-stamp: 0 2px 8px rgba(114, 47, 55, 0.25);
+            --radius-card: 6px;
+            --radius-btn: 20px;
+            --font-serif: 'Noto Serif SC', 'STSong', 'Songti SC', 'SimSun', 'KaiTi', 'STKaiti', serif;
+            --font-sans: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input,
+        textarea,
+        select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        html {
+            font-size: 16px;
+            height: 100%;
+            overflow: hidden;
+            background: #3C2415;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: #3C2415;
+            color: var(--ink);
+            height: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ========== 纸张纹理背景 ========== */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 10%, rgba(200, 160, 100, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 30%, rgba(180, 140, 80, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 70%, rgba(160, 120, 60, 0.05) 0%, transparent 55%),
+                url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            background-color: var(--paper);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ========== 主内容容器 ========== */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* ========== 顶部导航栏 ========== */
+        .header {
+            background: linear-gradient(180deg, #FDF3D1 0%, #F8E8C0 100%);
+            padding: 14px 18px 12px;
+            border-bottom: 2px solid var(--cream-darker);
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 1px 6px rgba(60, 36, 21, 0.06);
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 16px;
+            right: 16px;
+            height: 1px;
+            background: var(--cream-darker);
+            opacity: 0.4;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        /* 火漆印章Logo */
+        .seal-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #9B3A45 0%, #722F37 55%, #5A1F26 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-stamp), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .seal-logo::before {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 220, 180, 0.45);
+            opacity: 0.7;
+        }
+        .seal-logo-inner {
+            font-family: var(--font-serif);
+            color: #F5E0C0;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+            line-height: 1;
+            text-align: center;
+            pointer-events: none;
+        }
+        .header-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .header-title {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--burgundy-dark);
+            letter-spacing: 0.04em;
+            line-height: 1.2;
+        }
+        .header-subtitle {
+            font-size: 0.68rem;
+            color: var(--ink-faded);
+            letter-spacing: 0.06em;
+            font-family: var(--font-serif);
+        }
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid var(--cream-darker);
+            background: var(--paper-white);
+            color: var(--burgundy);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(60, 36, 21, 0.06);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .btn-icon:active {
+            background: var(--cream-dark);
+            transform: scale(0.94);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .btn-icon .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--burgundy);
+            color: #FDF3D1;
+            font-size: 0.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ========== 搜索筛选栏 ========== */
+        .search-bar-wrap {
+            flex-shrink: 0;
+            padding: 10px 16px;
+            background: var(--paper);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-input-group {
+            flex: 1;
+            min-width: 120px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-input-group .icon-search {
+            position: absolute;
+            left: 12px;
+            color: var(--ink-faded);
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 12px 10px 34px;
+            border-radius: 20px;
+            border: 1.5px solid var(--cream-darker);
+            background: var(--paper-white);
+            font-size: 0.9rem;
+            font-family: var(--font-sans);
+            color: var(--ink);
+            outline: none;
+            transition: all 0.25s;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        .search-input:focus {
+            border-color: var(--burgundy-light);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.07);
+        }
+        .search-input::placeholder {
+            color: var(--ink-faded);
+            font-style: italic;
+        }
+
+        /* ========== 列表区域 ========== */
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 14px 20px;
+            background: var(--paper);
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        .list-container::-webkit-scrollbar {
+            width: 3px;
+        }
+        .list-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .list-container::-webkit-scrollbar-thumb {
+            background: var(--cream-darker);
+            border-radius: 10px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 30px;
+            text-align: center;
+            min-height: 260px;
+        }
+        .empty-state .seal-large {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #C9A96E 0%, #A8894E 50%, #7D6235 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-stamp), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            margin-bottom: 18px;
+            position: relative;
+        }
+        .seal-large::before {
+            content: '';
+            position: absolute;
+            inset: 5px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 220, 160, 0.5);
+            opacity: 0.6;
+        }
+        .seal-large span {
+            font-size: 2rem;
+            color: #FDF3D1;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .empty-state p {
+            color: var(--ink-faded);
+            font-family: var(--font-serif);
+            font-size: 0.95rem;
+            letter-spacing: 0.04em;
+            line-height: 1.6;
+        }
+
+        /* 账目卡片 */
+        .record-card {
+            background: var(--paper-white);
+            border-radius: var(--radius-card);
+            margin-bottom: 10px;
+            padding: 14px 16px;
+            border: 1px solid rgba(180, 150, 110, 0.25);
+            position: relative;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            overflow: hidden;
+        }
+        .record-card:active {
+            transform: scale(0.985);
+            box-shadow: var(--shadow-medium);
+        }
+        .record-card.selected {
+            border-color: var(--burgundy-light);
+            background: #FFFBF5;
+            box-shadow: 0 0 0 2px rgba(114, 47, 55, 0.1);
+        }
+        .record-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--burgundy);
+            color: #FDF3D1;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        /* 纯装饰性火漆徽章 */
+        .seal-badge {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #C9A96E 0%, #A8894E 50%, #7D6235 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-serif);
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #FDF3D1;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-stamp);
+            position: relative;
+        }
+        .seal-badge::before {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.35);
+        }
+        .record-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .record-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--ink);
+            font-family: var(--font-serif);
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .record-reason {
+            font-size: 0.8rem;
+            color: var(--ink-light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .record-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.72rem;
+            color: var(--ink-faded);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .record-amount {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--burgundy);
+            font-family: var(--font-serif);
+            letter-spacing: 0.02em;
+            flex-shrink: 0;
+            text-align: right;
+            min-width: 60px;
+        }
+        .record-date-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: var(--cream);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.68rem;
+            color: var(--ink-faded);
+            font-family: var(--font-serif);
+            border: 1px solid var(--cream-darker);
+        }
+
+        /* ========== 底部操作栏 ========== */
+        .bottom-bar {
+            flex-shrink: 0;
+            background: linear-gradient(0deg, #FDF3D1 0%, #F8E8C0 100%);
+            border-top: 2px solid var(--cream-darker);
+            padding: 10px 16px calc(10px + var(--safe-bottom));
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 -1px 6px rgba(60, 36, 21, 0.05);
+            z-index: 10;
+        }
+        .btn-add-main {
+            flex: 1;
+            padding: 13px 20px;
+            border-radius: 25px;
+            background: var(--burgundy);
+            color: #FDF3D1;
+            border: none;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: var(--font-serif);
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            box-shadow: var(--shadow-stamp);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-add-main:active {
+            background: var(--burgundy-dark);
+            transform: scale(0.96);
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+        .btn-secondary {
+            padding: 11px 16px;
+            border-radius: 20px;
+            background: var(--paper-white);
+            border: 1.5px solid var(--cream-darker);
+            color: var(--ink-light);
+            font-size: 0.82rem;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-family: var(--font-sans);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-secondary:active {
+            background: var(--cream-dark);
+            transform: scale(0.95);
+        }
+        .btn-secondary.danger {
+            color: var(--danger);
+            border-color: rgba(168, 66, 58, 0.4);
+        }
+
+        /* ========== 弹窗/模态框 ========== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 15, 8, 0.65);
+            z-index: 100;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal-sheet {
+            background: var(--paper);
+            border-radius: 18px 18px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 20px 18px calc(20px + var(--safe-bottom));
+            box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--cream-darker);
+            margin: 0 auto 16px;
+            opacity: 0.6;
+        }
+        .modal-title {
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--burgundy-dark);
+            text-align: center;
+            margin-bottom: 18px;
+            letter-spacing: 0.05em;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--ink-light);
+            margin-bottom: 5px;
+            letter-spacing: 0.03em;
+            font-family: var(--font-serif);
+        }
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 8px;
+            border: 1.5px solid var(--cream-darker);
+            background: var(--paper-white);
+            font-size: 0.9rem;
+            font-family: var(--font-sans);
+            color: var(--ink);
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            border-color: var(--burgundy-light);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.06);
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 70px;
+            line-height: 1.5;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 22px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            font-family: var(--font-serif);
+            letter-spacing: 0.04em;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .btn-primary {
+            background: var(--burgundy);
+            color: #FDF3D1;
+            box-shadow: var(--shadow-stamp);
+        }
+        .btn-primary:active {
+            background: var(--burgundy-dark);
+            transform: scale(0.96);
+        }
+        .btn-cancel {
+            background: var(--paper-white);
+            color: var(--ink-light);
+            border: 1.5px solid var(--cream-darker);
+        }
+        .btn-cancel:active {
+            background: var(--cream-dark);
+            transform: scale(0.96);
+        }
+        .btn-danger {
+            background: #A8423A;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(168, 66, 58, 0.3);
+        }
+        .btn-danger:active {
+            background: #8B3029;
+            transform: scale(0.96);
+        }
+
+        /* ========== Toast提示 ========== */
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            padding: 10px 22px;
+            border-radius: 20px;
+            background: var(--ink);
+            color: #FDF3D1;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+            animation: toastIn 0.35s ease, toastOut 0.35s ease 1.8s forwards;
+            pointer-events: none;
+            font-family: var(--font-serif);
+            max-width: 85vw;
+            text-align: center;
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-16px);
+            }
+        }
+
+        /* ========== 响应式微调 ========== */
+        @media (min-width: 481px) {
+            body {
+                border-radius: 16px;
+                margin-top: 20px;
+                height: calc(100% - 40px);
+            }
+            .modal-sheet {
+                border-radius: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 主应用 ==================== -->
+    <div class="app-container" id="appContainer">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="seal-logo">
+                    <span class="seal-logo-inner">来</span>
+                </div>
+                <div class="header-title-group">
+                    <span class="header-title">人情簿</span>
+                    <span class="header-subtitle">MEMORANDUM</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" id="btnExport" title="导出Excel" aria-label="导出数据">
+                    📤
+                </button>
+                <button class="btn-icon" id="btnImport" title="导入Excel" aria-label="导入数据">
+                    📥
+                </button>
+                <button class="btn-icon" id="btnBatchDelete" title="批量删除" aria-label="批量删除">
+                    🗑️
+                    <span class="badge" id="batchBadge" style="display:none;">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 搜索栏 -->
+        <div class="search-bar-wrap">
+            <div class="search-input-group" style="flex:1;">
+                <span class="icon-search">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索对象、事由或备注…" autocomplete="off">
+            </div>
+        </div>
+
+        <!-- 账目列表 -->
+        <div class="list-container" id="listContainer">
+            <div class="empty-state" id="emptyState">
+                <div class="seal-large"><span>📜</span></div>
+                <p>尚无账目记录<br>点击下方按钮记一笔吧</p>
+            </div>
+        </div>
+
+        <!-- 底部操作栏 -->
+        <div class="bottom-bar">
+            <button class="btn-secondary" id="btnCancelSelect" style="display:none;">取消选择</button>
+            <button class="btn-add-main" id="btnAddRecord">
+                <span>✚</span> 记一笔
+            </button>
+            <button class="btn-secondary danger" id="btnDeleteSelected" style="display:none;">删除所选</button>
+        </div>
+    </div>
+
+    <!-- ==================== 新增/编辑弹窗（隐藏） ==================== -->
+    <div class="modal-overlay" id="modalOverlay" style="display:none;">
+        <div class="modal-sheet" id="modalSheet">
+            <div class="modal-handle"></div>
+            <div class="modal-title" id="modalTitle">新增账目</div>
+            <form id="recordForm" autocomplete="off">
+                <input type="hidden" id="recordId" value="">
+                <div class="form-group">
+                    <label class="form-label">👤 对象名称 *</label>
+                    <input type="text" class="form-input" id="inputName" placeholder="例如：张三" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📝 事由</label>
+                    <input type="text" class="form-input" id="inputReason" placeholder="例如：结婚随礼">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">💰 金额 *</label>
+                        <input type="number" class="form-input" id="inputAmount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📅 日期</label>
+                        <input type="date" class="form-input" id="inputDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">💬 备注</label>
+                    <textarea class="form-textarea" id="inputNote" placeholder="可补充说明…" rows="2"></textarea>
+                </div>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-cancel" id="btnCancelForm">取消</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitForm">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== 确认删除弹窗 ==================== -->
+    <div class="modal-overlay" id="confirmOverlay" style="display:none;">
+        <div class="modal-sheet" style="text-align:center;">
+            <div class="modal-handle"></div>
+            <div style="font-size:3rem;margin:10px 0;">⚠️</div>
+            <p style="font-family:var(--font-serif);font-size:1rem;color:var(--ink);margin-bottom:6px;letter-spacing:0.04em;" id="confirmMsg">确定要删除所选账目吗？</p>
+            <p style="font-size:0.75rem;color:var(--ink-faded);margin-bottom:16px;">此操作不可恢复</p>
+            <div class="btn-row">
+                <button class="btn btn-cancel" id="btnConfirmCancel">取消</button>
+                <button class="btn btn-danger" id="btnConfirmOk">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐藏的文件上传input -->
+    <input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none;">
+
+    <!-- Toast容器 -->
+    <div id="toastContainer"></div>
+
+    <script>
+        (function() {
+            // ==================== 数据库层 (IndexedDB) ====================
+            const DB_NAME = 'RenQingJian_DB';
+            const DB_VERSION = 1;
+            const STORE_NAME = 'records';
+            let db = null;
+
+            function openDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+                    request.onupgradeneeded = (e) => {
+                        const dbRef = e.target.result;
+                        if (!dbRef.objectStoreNames.contains(STORE_NAME)) {
+                            const store = dbRef.createObjectStore(STORE_NAME, { keyPath: 'id',
+                                autoIncrement: true });
+                            store.createIndex('name', 'name', { unique: false });
+                            store.createIndex('date', 'date', { unique: false });
+                            store.createIndex('createdAt', 'createdAt', { unique: false });
+                        }
+                    };
+                    request.onsuccess = (e) => {
+                        db = e.target.result;
+                        resolve(db);
+                    };
+                    request.onerror = (e) => {
+                        console.error('IndexedDB 打开失败:', e.target.error);
+                        reject(e.target.error);
+                    };
+                });
+            }
+
+            function getStore(mode = 'readonly') {
+                const tx = db.transaction(STORE_NAME, mode);
+                return tx.objectStore(STORE_NAME);
+            }
+
+            function getAllRecords() {
+                return new Promise((resolve, reject) => {
+                    const store = getStore('readonly');
+                    const request = store.getAll();
+                    request.onsuccess = () => {
+                        const records = request.result || [];
+                        // 按日期降序排列（最新在前）
+                        records.sort((a, b) => {
+                            const da = a.date || a.createdAt || '';
+                            const db_ = b.date || b.createdAt || '';
+                            return db_.localeCompare(da);
+                        });
+                        resolve(records);
+                    };
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            function getRecordById(id) {
+                return new Promise((resolve, reject) => {
+                    const store = getStore('readonly');
+                    const request = store.get(id);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            function addRecord(record) {
+                return new Promise((resolve, reject) => {
+                    const store = getStore('readwrite');
+                    const data = {
+                        ...record,
+                        createdAt: record.createdAt || new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                    };
+                    const request = store.add(data);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            function updateRecord(id, updates) {
+                return new Promise((resolve, reject) => {
+                    const store = getStore('readwrite');
+                    const getReq = store.get(id);
+                    getReq.onsuccess = () => {
+                        const existing = getReq.result;
+                        if (!existing) return reject(new Error('记录不存在'));
+                        const updated = {
+                            ...existing,
+                            ...updates,
+                            id: id,
+                            updatedAt: new Date().toISOString(),
+                        };
+                        const putReq = store.put(updated);
+                        putReq.onsuccess = () => resolve(putReq.result);
+                        putReq.onerror = () => reject(putReq.error);
+                    };
+                    getReq.onerror = () => reject(getReq.error);
+                });
+            }
+
+            function deleteRecord(id) {
+                return new Promise((resolve, reject) => {
+                    const store = getStore('readwrite');
+                    const request = store.delete(id);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            function deleteRecords(ids) {
+                return new Promise((resolve, reject) => {
+                    const store = getStore('readwrite');
+                    let completed = 0;
+                    let hasError = false;
+                    ids.forEach(id => {
+                        const req = store.delete(id);
+                        req.onsuccess = () => {
+                            completed++;
+                            if (completed === ids.length && !hasError) resolve();
+                        };
+                        req.onerror = () => {
+                            if (!hasError) {
+                                hasError = true;
+                                reject(req.error);
+                            }
+                        };
+                    });
+                    if (ids.length === 0) resolve();
+                });
+            }
+
+            function importRecords(recordsArray) {
+                return new Promise((resolve, reject) => {
+                    const store = getStore('readwrite');
+                    let completed = 0;
+                    let hasError = false;
+                    const total = recordsArray.length;
+                    if (total === 0) return resolve(0);
+                    recordsArray.forEach(rec => {
+                        const data = {
+                            name: rec.name || rec['对象名称'] || '',
+                            reason: rec.reason || rec['事由'] || '',
+                            amount: parseFloat(rec.amount || rec['金额'] || 0) || 0,
+                            date: rec.date || rec['日期'] || new Date().toISOString().slice(0, 10),
+                            note: rec.note || rec['备注'] || '',
+                            createdAt: rec.createdAt || new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                        };
+                        const req = store.add(data);
+                        req.onsuccess = () => {
+                            completed++;
+                            if (completed === total && !hasError) resolve(total);
+                        };
+                        req.onerror = () => {
+                            if (!hasError) { hasError = true;
+                                reject(req.error); }
+                        };
+                    });
+                });
+            }
+
+            // ==================== 应用状态 ====================
+            let allRecords = [];
+            let searchQuery = '';
+            let selectedIds = new Set();
+            let isBatchMode = false;
+            let editingId = null;
+
+            // ==================== DOM引用 ====================
+            const $listContainer = document.getElementById('listContainer');
+            const $searchInput = document.getElementById('searchInput');
+            const $modalOverlay = document.getElementById('modalOverlay');
+            const $modalTitle = document.getElementById('modalTitle');
+            const $recordForm = document.getElementById('recordForm');
+            const $recordId = document.getElementById('recordId');
+            const $inputName = document.getElementById('inputName');
+            const $inputReason = document.getElementById('inputReason');
+            const $inputAmount = document.getElementById('inputAmount');
+            const $inputDate = document.getElementById('inputDate');
+            const $inputNote = document.getElementById('inputNote');
+            const $btnSubmitForm = document.getElementById('btnSubmitForm');
+            const $btnCancelForm = document.getElementById('btnCancelForm');
+            const $btnAddRecord = document.getElementById('btnAddRecord');
+            const $btnCancelSelect = document.getElementById('btnCancelSelect');
+            const $btnDeleteSelected = document.getElementById('btnDeleteSelected');
+            const $btnBatchDelete = document.getElementById('btnBatchDelete');
+            const $batchBadge = document.getElementById('batchBadge');
+            const $btnExport = document.getElementById('btnExport');
+            const $btnImport = document.getElementById('btnImport');
+            const $importFileInput = document.getElementById('importFileInput');
+            const $confirmOverlay = document.getElementById('confirmOverlay');
+            const $confirmMsg = document.getElementById('confirmMsg');
+            const $btnConfirmCancel = document.getElementById('btnConfirmCancel');
+            const $btnConfirmOk = document.getElementById('btnConfirmOk');
+            const $toastContainer = document.getElementById('toastContainer');
+
+            let pendingConfirmAction = null;
+
+            // ==================== Toast ====================
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                $toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 2200);
+            }
+
+            // ==================== 渲染列表 ====================
+            function getFilteredRecords() {
+                let filtered = [...allRecords];
+                if (searchQuery.trim()) {
+                    const q = searchQuery.trim().toLowerCase();
+                    filtered = filtered.filter(r => {
+                        return (r.name && r.name.toLowerCase().includes(q)) ||
+                            (r.reason && r.reason.toLowerCase().includes(q)) ||
+                            (r.note && r.note.toLowerCase().includes(q)) ||
+                            (r.amount !== undefined && String(r.amount).includes(q));
+                    });
+                }
+                return filtered;
+            }
+
+            function renderList() {
+                const filtered = getFilteredRecords();
+                $listContainer.innerHTML = '';
+
+                if (filtered.length === 0) {
+                    $listContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="seal-large"><span>📜</span></div>
+                            <p>${searchQuery ? '没有匹配的账目记录' : '尚无账目记录<br>点击下方按钮记一笔吧'}</p>
+                        </div>`;
+                } else {
+                    filtered.forEach(rec => {
+                        const card = document.createElement('div');
+                        card.className = 'record-card' + (selectedIds.has(rec.id) ? ' selected' : '');
+                        card.dataset.id = rec.id;
+                        card.addEventListener('click', (e) => {
+                            if (isBatchMode) {
+                                e.preventDefault();
+                                toggleSelect(rec.id);
+                            } else {
+                                openEditModal(rec.id);
+                            }
+                        });
+                        card.addEventListener('long-press', () => {
+                            if (!isBatchMode) {
+                                enterBatchMode();
+                                toggleSelect(rec.id);
+                            }
+                        });
+
+                        const formattedAmount = Number(rec.amount || 0).toFixed(2);
+                        const displayDate = rec.date || (rec.createdAt ? rec.createdAt.slice(0, 10) : '');
+
+                        card.innerHTML = `
+                            <div class="seal-badge">来</div>
+                            <div class="record-info">
+                                <div class="record-name">${escapeHTML(rec.name || '未命名')}</div>
+                                ${rec.reason ? `<div class="record-reason">${escapeHTML(rec.reason)}</div>` : ''}
+                                <div class="record-meta">
+                                    <span class="record-date-tag">📅 ${displayDate || '未知日期'}</span>
+                                    ${rec.note ? `<span style="font-size:0.7rem;color:var(--ink-faded);">💬 ${escapeHTML(rec.note.substring(0,20))}${rec.note.length>20?'…':''}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="record-amount">¥ ${formattedAmount}</div>
+                        `;
+                        $listContainer.appendChild(card);
+                    });
+                }
+
+                updateBatchUI();
+            }
+
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function refreshList() {
+                getAllRecords().then(records => {
+                    allRecords = records;
+                    renderList();
+                }).catch(err => {
+                    console.error('获取记录失败:', err);
+                    showToast('加载数据失败，请刷新重试');
+                });
+            }
+
+            // ==================== 搜索 ====================
+            let searchDebounce = null;
+            $searchInput.addEventListener('input', () => {
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(() => {
+                    searchQuery = $searchInput.value;
+                    renderList();
+                }, 250);
+            });
+
+            // ==================== 批量选择 ====================
+            function enterBatchMode() {
+                isBatchMode = true;
+                selectedIds.clear();
+                updateBatchUI();
+                renderList();
+            }
+
+            function exitBatchMode() {
+                isBatchMode = false;
+                selectedIds.clear();
+                updateBatchUI();
+                renderList();
+            }
+
+            function toggleSelect(id) {
+                if (selectedIds.has(id)) {
+                    selectedIds.delete(id);
+                } else {
+                    selectedIds.add(id);
+                }
+                if (selectedIds.size === 0 && isBatchMode) {
+                    exitBatchMode();
+                } else {
+                    updateBatchUI();
+                    renderList();
+                }
+            }
+
+            function updateBatchUI() {
+                const count = selectedIds.size;
+                if (isBatchMode && count > 0) {
+                    $btnCancelSelect.style.display = '';
+                    $btnDeleteSelected.style.display = '';
+                    $btnAddRecord.style.display = 'none';
+                    $batchBadge.style.display = '';
+                    $batchBadge.textContent = count;
+                    $btnDeleteSelected.textContent = `删除所选(${count})`;
+                } else if (isBatchMode && count === 0) {
+                    $btnCancelSelect.style.display = '';
+                    $btnDeleteSelected.style.display = 'none';
+                    $btnAddRecord.style.display = 'none';
+                    $batchBadge.style.display = 'none';
+                } else {
+                    $btnCancelSelect.style.display = 'none';
+                    $btnDeleteSelected.style.display = 'none';
+                    $btnAddRecord.style.display = '';
+                    $batchBadge.style.display = 'none';
+                }
+            }
+
+            $btnCancelSelect.addEventListener('click', exitBatchMode);
+            $btnBatchDelete.addEventListener('click', () => {
+                if (allRecords.length === 0) {
+                    showToast('没有可删除的记录');
+                    return;
+                }
+                if (!isBatchMode) {
+                    enterBatchMode();
+                    showToast('请点击选择要删除的账目');
+                }
+            });
+            $btnDeleteSelected.addEventListener('click', () => {
+                if (selectedIds.size === 0) return;
+                $confirmMsg.textContent = `确定要删除所选 ${selectedIds.size} 条账目吗？`;
+                $confirmOverlay.style.display = 'flex';
+                pendingConfirmAction = async () => {
+                    const ids = Array.from(selectedIds);
+                    try {
+                        await deleteRecords(ids);
+                        showToast(`已删除 ${ids.length} 条记录`);
+                        exitBatchMode();
+                        refreshList();
+                    } catch (err) {
+                        console.error('删除失败:', err);
+                        showToast('删除失败，请重试');
+                    }
+                };
+            });
+
+            // ==================== 确认弹窗 ====================
+            $btnConfirmCancel.addEventListener('click', () => {
+                $confirmOverlay.style.display = 'none';
+                pendingConfirmAction = null;
+            });
+            $btnConfirmOk.addEventListener('click', async () => {
+                $confirmOverlay.style.display = 'none';
+                if (pendingConfirmAction) {
+                    await pendingConfirmAction();
+                    pendingConfirmAction = null;
+                }
+            });
+
+            // ==================== 新增/编辑弹窗 ====================
+            function openAddModal() {
+                editingId = null;
+                $recordId.value = '';
+                $modalTitle.textContent = '新增账目';
+                $inputName.value = '';
+                $inputReason.value = '';
+                $inputAmount.value = '';
+                $inputDate.value = new Date().toISOString().slice(0, 10);
+                $inputNote.value = '';
+                $btnSubmitForm.textContent = '保存';
+                $modalOverlay.style.display = 'flex';
+                setTimeout(() => $inputName.focus(), 350);
+            }
+
+            function openEditModal(id) {
+                getRecordById(id).then(rec => {
+                    if (!rec) {
+                        showToast('记录不存在');
+                        return;
+                    }
+                    editingId = id;
+                    $recordId.value = id;
+                    $modalTitle.textContent = '编辑账目';
+                    $inputName.value = rec.name || '';
+                    $inputReason.value = rec.reason || '';
+                    $inputAmount.value = rec.amount !== undefined ? rec.amount : '';
+                    $inputDate.value = rec.date || (rec.createdAt ? rec.createdAt.slice(0, 10) : new Date().toISOString().slice(0, 10));
+                    $inputNote.value = rec.note || '';
+                    $btnSubmitForm.textContent = '更新';
+                    $modalOverlay.style.display = 'flex';
+                }).catch(err => {
+                    console.error('获取记录失败:', err);
+                    showToast('加载记录失败');
+                });
+            }
+
+            function closeModal() {
+                $modalOverlay.style.display = 'none';
+                editingId = null;
+                $recordForm.reset();
+            }
+
+            $btnAddRecord.addEventListener('click', () => {
+                if (isBatchMode) exitBatchMode();
+                openAddModal();
+            });
+            $btnCancelForm.addEventListener('click', closeModal);
+            $modalOverlay.addEventListener('click', (e) => {
+                if (e.target === $modalOverlay) closeModal();
+            });
+
+            $recordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = $inputName.value.trim();
+                const amountStr = $inputAmount.value.trim();
+                if (!name) {
+                    showToast('请输入对象名称');
+                    $inputName.focus();
+                    return;
+                }
+                if (!amountStr || isNaN(parseFloat(amountStr)) || parseFloat(amountStr) < 0) {
+                    showToast('请输入有效的金额');
+                    $inputAmount.focus();
+                    return;
+                }
+                const recordData = {
+                    name: name,
+                    reason: $inputReason.value.trim(),
+                    amount: parseFloat(parseFloat(amountStr).toFixed(2)),
+                    date: $inputDate.value || new Date().toISOString().slice(0, 10),
+                    note: $inputNote.value.trim(),
+                };
+
+                try {
+                    if (editingId) {
+                        await updateRecord(editingId, recordData);
+                        showToast('账目已更新');
+                    } else {
+                        await addRecord(recordData);
+                        showToast('账目已记录');
+                    }
+                    closeModal();
+                    refreshList();
+                } catch (err) {
+                    console.error('保存失败:', err);
+                    showToast('保存失败，请重试');
+                }
+            });
+
+            // ==================== Excel导出 ====================
+            $btnExport.addEventListener('click', async () => {
+                try {
+                    const records = await getAllRecords();
+                    if (records.length === 0) {
+                        showToast('暂无数据可导出');
+                        return;
+                    }
+                    const exportData = records.map(r => ({
+                        '对象名称': r.name || '',
+                        '事由': r.reason || '',
+                        '金额': r.amount || 0,
+                        '日期': r.date || '',
+                        '备注': r.note || '',
+                        '创建时间': r.createdAt || '',
+                        '更新时间': r.updatedAt || '',
+                    }));
+                    const ws = XLSX.utils.json_to_sheet(exportData);
+                    ws['!cols'] = [
+                        { wch: 15 }, { wch: 20 }, { wch: 12 }, { wch: 14 },
+                        { wch: 25 }, { wch: 20 }, { wch: 20 }
+                    ];
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, '人情账目');
+                    const now = new Date();
+                    const filename = `人情账目_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
+                    XLSX.writeFile(wb, filename);
+                    showToast('导出成功！');
+                } catch (err) {
+                    console.error('导出失败:', err);
+                    showToast('导出失败，请重试');
+                }
+            });
+
+            // ==================== Excel导入 ====================
+            $btnImport.addEventListener('click', () => {
+                $importFileInput.click();
+            });
+            $importFileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                try {
+                    const data = await readExcelFile(file);
+                    if (!data || data.length === 0) {
+                        showToast('文件中没有有效数据');
+                        return;
+                    }
+                    $confirmMsg.textContent = `即将导入 ${data.length} 条记录，是否继续？`;
+                    $confirmOverlay.style.display = 'flex';
+                    pendingConfirmAction = async () => {
+                        try {
+                            const count = await importRecords(data);
+                            showToast(`成功导入 ${count} 条记录`);
+                            refreshList();
+                        } catch (err) {
+                            console.error('导入失败:', err);
+                            showToast('导入失败，请检查文件格式');
+                        }
+                    };
+                } catch (err) {
+                    console.error('读取文件失败:', err);
+                    showToast('文件读取失败，请确认格式正确');
+                }
+                $importFileInput.value = '';
+            });
+
+            function readExcelFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const ab = e.target.result;
+                            const wb = XLSX.read(ab, { type: 'array' });
+                            const sheetName = wb.SheetNames[0];
+                            if (!sheetName) {
+                                resolve([]);
+                                return;
+                            }
+                            const ws = wb.Sheets[sheetName];
+                            const jsonData = XLSX.utils.sheet_to_json(ws, { defval: '' });
+                            resolve(jsonData);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            // ==================== 长按检测 ====================
+            let longPressTimer = null;
+            document.addEventListener('pointerdown', (e) => {
+                const card = e.target.closest('.record-card');
+                if (!card || isBatchMode) return;
+                longPressTimer = setTimeout(() => {
+                    const id = Number(card.dataset.id);
+                    if (id && !isNaN(id)) {
+                        if (!isBatchMode) enterBatchMode();
+                        toggleSelect(id);
+                        if (navigator.vibrate) navigator.vibrate(15);
+                    }
+                }, 600);
+            });
+            document.addEventListener('pointerup', () => {
+                clearTimeout(longPressTimer);
+            });
+            document.addEventListener('pointermove', () => {
+                clearTimeout(longPressTimer);
+            });
+
+            // ==================== 关闭弹窗的点击遮罩 ====================
+            $confirmOverlay.addEventListener('click', (e) => {
+                if (e.target === $confirmOverlay) {
+                    $confirmOverlay.style.display = 'none';
+                    pendingConfirmAction = null;
+                }
+            });
+
+            // ==================== 键盘快捷键 ====================
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if ($modalOverlay.style.display === 'flex') {
+                        closeModal();
+                    }
+                    if ($confirmOverlay.style.display === 'flex') {
+                        $confirmOverlay.style.display = 'none';
+                        pendingConfirmAction = null;
+                    }
+                    if (isBatchMode) exitBatchMode();
+                }
+                if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                    e.preventDefault();
+                    if (!isBatchMode) openAddModal();
+                }
+            });
+
+            // ==================== 初始化应用 ====================
+            async function initApp() {
+                try {
+                    await openDB();
+                    console.log('📜 人情簿 - 数据库已就绪');
+                    await refreshList();
+                } catch (err) {
+                    console.error('初始化失败:', err);
+                    showToast('应用初始化失败，请刷新页面');
+                }
+            }
+
+            initApp();
+
+            console.log(`
+            💌  人情簿 · 人情账本
+            🕰️  高级复古邮政情怀风格
+            🎨  奶油黄 × 勃艮第酒红 × 火漆印章
+            📱  移动端Web应用 | 可封装安卓App
+            ✨  数据存储于IndexedDB | 支持Excel导入导出
+            `);
+        })();
+    </script>
+</body>
 </html>
