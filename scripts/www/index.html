@@ -20,7 +20,7 @@
         .btn-icon { width:34px; height:34px; border-radius:50%; border:1.5px solid var(--cream-darker); background:var(--paper-white); color:#722F37; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
         .btn-icon:active { background:var(--cream-dark); transform:scale(0.94); }
         .badge { position:absolute; top:-4px; right:-4px; width:16px; height:16px; border-radius:50%; background:#722F37; color:#FDF3D1; font-size:0.55rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
-        .search-wrap { padding:8px 14px; background:var(--paper); border-bottom:1px solid rgba(0,0,0,0.04); }
+        .search-wrap { padding:8px 14px; background:var(--paper); border-bottom:1px solid rgba(0,0,0,0.04); display:none; }
         .search-box { position:relative; }
         .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--ink-faded); }
         .search-input { width:100%; padding:9px 10px 9px 30px; border-radius:18px; border:1.5px solid var(--cream-darker); background:var(--paper-white); font-size:0.85rem; outline:none; box-shadow:inset 0 1px 2px rgba(0,0,0,0.03); }
@@ -63,7 +63,6 @@
 <body>
 <div class="app-container" id="appContainer">
     <header class="header">
-        <!-- 左侧仅保留返回按钮，移除退出按钮 -->
         <div class="header-part" style="min-width:80px; justify-content:flex-start;">
             <button class="btn-icon" id="btnBack" style="display:none;">←</button>
         </div>
@@ -74,7 +73,7 @@
             <button class="btn-icon" id="btnBatchDelete" style="display:none;">🗑️<span class="badge" id="batchBadge" style="display:none;">0</span></button>
         </div>
     </header>
-    <div class="search-wrap">
+    <div class="search-wrap" id="searchBarWrap">
         <div class="search-box">
             <span class="search-icon">🔍</span>
             <input type="text" class="search-input" id="searchInput" placeholder="搜索对象…" autocomplete="off">
@@ -162,7 +161,7 @@
 
 <script>
     (() => {
-        const DB_NAME = 'RenQingBuV5', DB_VER = 1;
+        const DB_NAME = 'RenQingBuV6', DB_VER = 1;
         const F_STORE = 'folders', R_STORE = 'records';
         const PRESET = ['结婚','乔迁','满月','升学','祝寿','白事'];
         let db;
@@ -212,7 +211,7 @@
 
         const $ = id => document.getElementById(id);
         const els = {
-            headerTitle: $('headerTitle'), searchInput: $('searchInput'), main: $('mainContent'),
+            headerTitle: $('headerTitle'), searchInput: $('searchInput'), searchWrap: $('searchBarWrap'), main: $('mainContent'),
             btnMain: $('btnMainAction'), btnCancelSel: $('btnCancelSelect'), btnDelSel: $('btnDeleteSelected'),
             btnBatch: $('btnBatchDelete'), badge: $('batchBadge'), btnExport: $('btnExport'), btnImport: $('btnImport'),
             file: $('importFileInput'), btnBack: $('btnBack'),
@@ -228,18 +227,25 @@
         function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
         function updateHeader() {
-            // 主页隐藏返回按钮，文件夹内显示返回按钮
             els.btnBack.style.display = view==='folders' ? 'none' : 'flex';
+            // 控制搜索栏显示
+            els.searchWrap.style.display = view==='folder' ? 'block' : 'none';
         }
+
         async function goFolders() {
-            view='folders'; folderId=null; search=''; els.searchInput.value=''; selected.clear(); batch=false;
+            view='folders'; folderId=null; search=''; els.searchInput.value='';
+            selected.clear(); batch=false;
             els.headerTitle.textContent='人情簿'; els.btnMain.innerHTML='<span>📁</span> 新增文件夹';
-            els.btnBatch.style.display='none'; updateHeader(); updateBatchUI(); await renderFolders();
+            els.btnBatch.style.display='none'; updateHeader(); updateBatchUI();
+            await renderFolders();
         }
+
         async function goFolder(fid, fname) {
-            view='folder'; folderId=fid; folderName=fname; search=''; els.searchInput.value=''; selected.clear(); batch=false;
+            view='folder'; folderId=fid; folderName=fname; search=''; els.searchInput.value='';
+            selected.clear(); batch=false;
             els.headerTitle.textContent=fname; els.btnMain.innerHTML='<span>✚</span> 记一笔';
-            els.btnBatch.style.display=''; updateHeader(); updateBatchUI(); await renderRecords();
+            els.btnBatch.style.display=''; updateHeader(); updateBatchUI();
+            await renderRecords();
         }
 
         async function renderFolders() {
@@ -290,7 +296,8 @@
         }
 
         els.searchInput.addEventListener('input', () => {
-            clearTimeout(els._st); els._st = setTimeout(()=>{ search=els.searchInput.value; view==='folder'?renderRecords():renderFolders(); },200);
+            clearTimeout(els._st);
+            els._st = setTimeout(()=>{ search=els.searchInput.value; if(view==='folder') renderRecords(); },200);
         });
 
         function enterBatch() { batch=true; selected.clear(); updateBatchUI(); renderRecords(); }
@@ -376,10 +383,9 @@
         };
 
         els.btnMain.onclick = () => { if(view==='folders') openAddFolder(); else { if(batch) exitBatch(); openAddRecord(); } };
-        // 移除退出按钮逻辑，保留返回按钮
         els.btnBack.onclick = () => { if(batch) exitBatch(); goFolders(); };
 
-        // 导出（时间戳防重名）
+        // 导出
         els.btnExport.onclick = async () => {
             const recs = view==='folder' ? await api.records.byFolder(folderId) : await api.records.all();
             if(!recs.length) return toast('暂无数据');
@@ -395,7 +401,7 @@
             toast(`导出成功 (${label})`);
         };
 
-        // 导入（去重，允许所有文件）
+        // 导入
         els.btnImport.onclick = () => els.file.click();
         els.file.onchange = async e => {
             const file = e.target.files[0]; if(!file) return;
