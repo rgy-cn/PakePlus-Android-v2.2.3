@@ -19,7 +19,6 @@
         .header-title { font-weight:700; font-size:1.2rem; color:#5A1F26; position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap; }
         .btn-icon { width:34px; height:34px; border-radius:50%; border:1.5px solid var(--cream-darker); background:var(--paper-white); color:#722F37; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
         .btn-icon:active { background:var(--cream-dark); transform:scale(0.94); }
-        .badge { position:absolute; top:-4px; right:-4px; width:16px; height:16px; border-radius:50%; background:#722F37; color:#FDF3D1; font-size:0.55rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
         .search-wrap { padding:8px 14px; background:var(--paper); border-bottom:1px solid rgba(0,0,0,0.04); display:none; }
         .search-box { position:relative; }
         .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--ink-faded); }
@@ -31,22 +30,32 @@
         .folder-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
         .folder-name { font-weight:700; font-size:1rem; }
         .folder-summary { font-size:0.7rem; color:var(--ink-faded); }
-        .folder-actions { position:absolute; top:6px; right:8px; display:flex; gap:4px; opacity:0; }
-        .folder-card:active .folder-actions, .folder-card:hover .folder-actions { opacity:1; }
-        .record-card { background:var(--paper-white); border-radius:8px; padding:12px 14px; margin-bottom:8px; border:1px solid rgba(180,150,110,0.25); display:flex; align-items:center; gap:12px; cursor:pointer; position:relative; box-shadow:var(--shadow-soft); }
-        .record-card.selected { border-color:#722F37; background:#FFFBF5; }
-        .record-card.selected::after { content:'✓'; position:absolute; top:6px; right:10px; width:20px; height:20px; border-radius:50%; background:#722F37; color:#FDF3D1; font-size:0.7rem; display:flex; align-items:center; justify-content:center; }
+        .record-card {
+            background:var(--paper-white); border-radius:8px; padding:12px 14px; margin-bottom:8px;
+            border:1px solid rgba(180,150,110,0.25); display:flex; align-items:center; gap:12px;
+            cursor:pointer; position:relative; box-shadow:var(--shadow-soft);
+        }
         .record-info { flex:1; }
         .record-name { font-weight:700; font-size:0.95rem; }
         .record-meta { font-size:0.7rem; color:var(--ink-faded); }
         .record-amount { font-weight:700; font-size:1.1rem; color:#722F37; }
-        .bottom-bar { flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0); padding:10px 16px calc(10px + var(--safe-bottom)); display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker); }
+        .bottom-bar {
+            flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0);
+            padding:10px 16px calc(10px + var(--safe-bottom));
+            display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker);
+        }
         .btn-main { padding:13px 25px; border-radius:25px; background:#722F37; color:#FDF3D1; border:none; font-size:1rem; font-weight:700; box-shadow:var(--shadow-stamp); cursor:pointer; }
         .btn-sec { padding:10px 14px; border-radius:18px; background:var(--paper-white); border:1.5px solid var(--cream-darker); color:var(--ink-light); font-size:0.8rem; cursor:pointer; }
-        .btn-danger { color:#A8423A; border-color:rgba(168,66,58,0.4); }
-        .modal { position:fixed; inset:0; background:rgba(30,15,8,0.65); z-index:100; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s; }
+        .modal {
+            position:fixed; inset:0; background:rgba(30,15,8,0.65); z-index:100;
+            display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s;
+        }
         @keyframes fadeIn{ from{opacity:0} }
-        .sheet { background:var(--paper); border-radius:18px 18px 0 0; width:100%; max-width:480px; max-height:85vh; overflow-y:auto; padding:18px 18px calc(18px + var(--safe-bottom)); box-shadow:0 -8px 40px rgba(0,0,0,0.3); animation:slideUp 0.3s; }
+        .sheet {
+            background:var(--paper); border-radius:18px 18px 0 0; width:100%; max-width:480px;
+            max-height:85vh; overflow-y:auto; padding:18px 18px calc(18px + var(--safe-bottom));
+            box-shadow:0 -8px 40px rgba(0,0,0,0.3); animation:slideUp 0.3s;
+        }
         @keyframes slideUp{ from{transform:translateY(100%)} }
         .modal-handle { width:36px; height:4px; background:var(--cream-darker); margin:0 auto 14px; border-radius:2px; }
         .modal-title { font-size:1.1rem; text-align:center; margin-bottom:14px; color:#5A1F26; font-weight:700; }
@@ -55,9 +64,33 @@
         .form-input,.form-textarea { width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--cream-darker); background:var(--paper-white); font-size:0.85rem; outline:none; }
         .btn { font-weight:700; cursor:pointer; border:none; }
         .btn-primary { background:#722F37; color:#FDF3D1; }
-        .toast { position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:200; padding:10px 20px; border-radius:20px; background:#3C2415; color:#FDF3D1; font-size:0.85rem; box-shadow:0 6px 24px rgba(0,0,0,0.3); animation:toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards; pointer-events:none; }
+        .btn-danger { background:#A8423A; color:white; }
+        .toast {
+            position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:200;
+            padding:10px 20px; border-radius:20px; background:#3C2415; color:#FDF3D1;
+            font-size:0.85rem; box-shadow:0 6px 24px rgba(0,0,0,0.3);
+            animation:toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards; pointer-events:none;
+        }
         @keyframes toastIn{ from{opacity:0; transform:translateX(-50%) translateY(-16px)} }
         @keyframes toastOut{ to{opacity:0; transform:translateX(-50%) translateY(-12px)} }
+
+        /* 操作菜单样式 */
+        .action-sheet .sheet { padding: 0; border-radius: 18px 18px 0 0; }
+        .action-item {
+            display:block; width:100%; padding:16px; text-align:center;
+            border-bottom:1px solid var(--cream-darker); background:var(--paper-white);
+            font-size:1rem; color:var(--ink); cursor:pointer; font-family:var(--font-kai);
+            transition: background 0.15s;
+        }
+        .action-item:active { background:var(--cream-dark); }
+        .action-item.danger-item { color:var(--danger); font-weight:700; }
+        .action-cancel {
+            display:block; width:100%; padding:16px; text-align:center;
+            background:var(--paper-white); border:none; font-size:1rem;
+            color:var(--ink-light); cursor:pointer; font-family:var(--font-kai);
+            margin-top:8px; border-radius:18px;
+        }
+        .action-cancel:active { background:var(--cream-dark); }
     </style>
 </head>
 <body>
@@ -70,7 +103,6 @@
         <div class="header-part" style="min-width:80px; justify-content:flex-end;">
             <button class="btn-icon" id="btnExport">📤</button>
             <button class="btn-icon" id="btnImport">📥</button>
-            <button class="btn-icon" id="btnBatchDelete" style="display:none;">🗑️<span class="badge" id="batchBadge" style="display:none;">0</span></button>
         </div>
     </header>
     <div class="search-wrap" id="searchBarWrap">
@@ -81,9 +113,7 @@
     </div>
     <div class="main-content" id="mainContent"></div>
     <div class="bottom-bar">
-        <button class="btn-sec" id="btnCancelSelect" style="display:none;">取消选择</button>
         <button class="btn-main" id="btnMainAction"><span>📁</span> 新增文件夹</button>
-        <button class="btn-sec btn-danger" id="btnDeleteSelected" style="display:none;">删除所选</button>
     </div>
 </div>
 
@@ -104,7 +134,7 @@
             </div>
         </form>
         <div id="folderDeleteArea" style="margin-top:12px; text-align:center; display:none;">
-            <button type="button" class="btn" id="btnDeleteFolder" style="width:100%; background:#A8423A; color:white; padding:10px; border-radius:20px;">🗑 删除此文件夹及所有记录</button>
+            <button type="button" class="btn btn-danger" id="btnDeleteFolder" style="width:100%;">🗑 删除此文件夹及所有记录</button>
         </div>
     </div>
 </div>
@@ -156,12 +186,23 @@
     </div>
 </div>
 
+<!-- 操作菜单弹窗（用于长按） -->
+<div class="modal action-sheet" id="actionSheet" style="display:none;">
+    <div class="sheet" style="padding:12px 0;">
+        <div class="modal-handle"></div>
+        <div id="actionTitle" style="text-align:center; margin-bottom:8px; font-size:0.9rem; color:var(--ink-faded);"></div>
+        <div id="actionEditBtn" class="action-item">✎ 编辑</div>
+        <div id="actionDelBtn" class="action-item danger-item">🗑 删除</div>
+        <button class="action-cancel" id="btnActionCancel">取消</button>
+    </div>
+</div>
+
 <input type="file" id="importFileInput" accept="*/*" style="display:none;">
 <div id="toastContainer"></div>
 
 <script>
     (() => {
-        const DB_NAME = 'RenQingBuV6', DB_VER = 1;
+        const DB_NAME = 'RenQingBuV7', DB_VER = 1;
         const F_STORE = 'folders', R_STORE = 'records';
         const PRESET = ['结婚','乔迁','满月','升学','祝寿','白事'];
         let db;
@@ -195,7 +236,7 @@
                 all: () => new Promise(r => { const t = db.transaction(R_STORE); t.objectStore(R_STORE).getAll().onsuccess = e => r(e.target.result || []); }),
                 add: (rec) => new Promise(r => { const t = db.transaction(R_STORE, 'readwrite'); t.objectStore(R_STORE).add({...rec, createdAt: new Date().toISOString()}).onsuccess = e => r(e.target.result); }),
                 put: (id, data) => new Promise(r => { const t = db.transaction(R_STORE, 'readwrite'); const s = t.objectStore(R_STORE); s.get(id).onsuccess = e => { const rec = e.target.result; Object.assign(rec, data); s.put(rec).onsuccess = r; }; }),
-                del: (ids) => new Promise(r => { const t = db.transaction(R_STORE, 'readwrite'); const s = t.objectStore(R_STORE); let c=0; ids.forEach(id => s.delete(id).onsuccess = () => { if(++c===ids.length) r(); }); if(ids.length===0) r(); })
+                del: (id) => new Promise(r => { const t = db.transaction(R_STORE, 'readwrite'); t.objectStore(R_STORE).delete(id).onsuccess = r; })
             }
         };
 
@@ -206,21 +247,25 @@
         }
 
         let view = 'folders', folderId = null, folderName = '';
-        let folders = [], records = [], search = '', selected = new Set(), batch = false;
+        let folders = [], records = [], search = '';
         let editFolderId = null, editRecId = null;
+        let longPressTimer = null;
+        let actionTarget = null; // 当前长按的目标对象 { type: 'folder'/'record', id: ..., name: ... }
 
         const $ = id => document.getElementById(id);
         const els = {
             headerTitle: $('headerTitle'), searchInput: $('searchInput'), searchWrap: $('searchBarWrap'), main: $('mainContent'),
-            btnMain: $('btnMainAction'), btnCancelSel: $('btnCancelSelect'), btnDelSel: $('btnDeleteSelected'),
-            btnBatch: $('btnBatchDelete'), badge: $('batchBadge'), btnExport: $('btnExport'), btnImport: $('btnImport'),
+            btnMain: $('btnMainAction'), btnExport: $('btnExport'), btnImport: $('btnImport'),
             file: $('importFileInput'), btnBack: $('btnBack'),
             folderModal: $('folderModal'), folderTitle: $('folderModalTitle'), folderId: $('folderId'), inputFolderName: $('inputFolderName'),
             folderDelArea: $('folderDeleteArea'), btnDelFolder: $('btnDeleteFolder'),
             recModal: $('recordModal'), recTitle: $('recordModalTitle'), recId: $('recordId'),
             inputName: $('inputName'), inputAmt: $('inputAmount'), inputDate: $('inputDate'), inputNote: $('inputNote'),
             confirmModal: $('confirmModal'), confirmMsg: $('confirmMsg'), confirmSub: $('confirmSubMsg'),
-            btnConfirmCancel: $('btnConfirmCancel'), btnConfirmOk: $('btnConfirmOk'), toast: $('toastContainer')
+            btnConfirmCancel: $('btnConfirmCancel'), btnConfirmOk: $('btnConfirmOk'),
+            actionSheet: $('actionSheet'), actionTitle: $('actionTitle'),
+            actionEditBtn: $('actionEditBtn'), actionDelBtn: $('actionDelBtn'), btnActionCancel: $('btnActionCancel'),
+            toast: $('toastContainer')
         };
 
         function toast(msg) { const t = document.createElement('div'); t.className='toast'; t.textContent=msg; els.toast.appendChild(t); setTimeout(()=>t.remove(), 2000); }
@@ -228,23 +273,20 @@
 
         function updateHeader() {
             els.btnBack.style.display = view==='folders' ? 'none' : 'flex';
-            // 控制搜索栏显示
             els.searchWrap.style.display = view==='folder' ? 'block' : 'none';
         }
 
         async function goFolders() {
             view='folders'; folderId=null; search=''; els.searchInput.value='';
-            selected.clear(); batch=false;
             els.headerTitle.textContent='人情簿'; els.btnMain.innerHTML='<span>📁</span> 新增文件夹';
-            els.btnBatch.style.display='none'; updateHeader(); updateBatchUI();
+            updateHeader();
             await renderFolders();
         }
 
         async function goFolder(fid, fname) {
             view='folder'; folderId=fid; folderName=fname; search=''; els.searchInput.value='';
-            selected.clear(); batch=false;
             els.headerTitle.textContent=fname; els.btnMain.innerHTML='<span>✚</span> 记一笔';
-            els.btnBatch.style.display=''; updateHeader(); updateBatchUI();
+            updateHeader();
             await renderRecords();
         }
 
@@ -259,40 +301,54 @@
             folders.forEach(f => {
                 const c = cnt[f.id]||0, total = Math.floor(sum[f.id]||0);
                 html += `<div class="folder-card" data-fid="${f.id}" data-fname="${esc(f.name)}">
-                    <div class="folder-actions"><button class="act-edit">✎</button><button class="act-del">✕</button></div>
                     <div class="folder-icon" style="background:radial-gradient(circle at 30% 30%, #D4A85C, #8B6428);">${emojiMap[f.name]||'📂'}</div>
                     <div class="folder-name">${esc(f.name)}</div>
                     <div class="folder-summary">${c} 笔记录 共${total}元</div>
                 </div>`;
             });
+            html += '</div>';
             els.main.innerHTML = html;
             document.querySelectorAll('.folder-card').forEach(card => {
-                card.addEventListener('click', e => { if(e.target.closest('.act-edit,.act-del')) return; goFolder(+card.dataset.fid, card.dataset.fname); });
-                let t; card.addEventListener('pointerdown', e => { if(e.target.closest('.act-edit,.act-del')) return; t=setTimeout(()=>openEditFolder(+card.dataset.fid, card.dataset.fname),600); });
-                card.addEventListener('pointerup', ()=>clearTimeout(t));
+                card.addEventListener('click', () => {
+                    goFolder(+card.dataset.fid, card.dataset.fname);
+                });
+                // 长按文件夹
+                card.addEventListener('pointerdown', e => {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = setTimeout(() => {
+                        actionTarget = { type: 'folder', id: +card.dataset.fid, name: card.dataset.fname };
+                        showActionSheet(`文件夹：${card.dataset.fname}`);
+                    }, 600);
+                });
+                card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
+                card.addEventListener('pointermove', () => clearTimeout(longPressTimer));
             });
-            document.querySelectorAll('.act-edit').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const c=b.closest('.folder-card'); openEditFolder(+c.dataset.fid, c.dataset.fname); }));
-            document.querySelectorAll('.act-del').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const c=b.closest('.folder-card'); confirmDelFolder(+c.dataset.fid, c.dataset.fname); }));
         }
 
         async function renderRecords() {
             records = await api.records.byFolder(folderId);
-            let list = records.filter(r => !search.trim() || (r.name||'').toLowerCase().includes(search.trim().toLowerCase()));
-            if(!list.length) { els.main.innerHTML=`<div class="empty-state"><div style="font-size:2rem;">📜</div><p>${search?'无匹配记录':'还没有记录'}</p></div>`; }
+            let filtered = records.filter(r => !search.trim() || (r.name||'').toLowerCase().includes(search.trim().toLowerCase()));
+            if(!filtered.length) { els.main.innerHTML=`<div class="empty-state"><div style="font-size:2rem;">📜</div><p>${search?'无匹配记录':'还没有记录'}</p></div>`; }
             else {
                 let html = '';
-                list.forEach(r => html += `<div class="record-card${selected.has(r.id)?' selected':''}" data-rid="${r.id}">
+                filtered.forEach(r => html += `<div class="record-card" data-rid="${r.id}" data-rname="${esc(r.name)}">
                     <div class="record-info"><div class="record-name">${esc(r.name||'未命名')}</div><div class="record-meta">📅 ${r.date||''}</div></div>
                     <div class="record-amount">¥ ${Number(r.amount||0).toFixed(2)}</div>
                 </div>`);
                 els.main.innerHTML = html;
                 document.querySelectorAll('.record-card').forEach(card => {
-                    card.addEventListener('click', () => { const id=+card.dataset.rid; if(batch) toggleSelect(id); else openEditRecord(id); });
-                    let t; card.addEventListener('pointerdown', ()=>{ t=setTimeout(()=>{ if(!batch){ enterBatch(); toggleSelect(+card.dataset.rid); } },600); });
-                    card.addEventListener('pointerup', ()=>clearTimeout(t));
+                    // 长按记录
+                    card.addEventListener('pointerdown', e => {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = setTimeout(() => {
+                            actionTarget = { type: 'record', id: +card.dataset.rid, name: card.dataset.rname || '未命名' };
+                            showActionSheet(`记录：${card.dataset.rname || '未命名'}`);
+                        }, 600);
+                    });
+                    card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
+                    card.addEventListener('pointermove', () => clearTimeout(longPressTimer));
                 });
             }
-            updateBatchUI();
         }
 
         els.searchInput.addEventListener('input', () => {
@@ -300,20 +356,37 @@
             els._st = setTimeout(()=>{ search=els.searchInput.value; if(view==='folder') renderRecords(); },200);
         });
 
-        function enterBatch() { batch=true; selected.clear(); updateBatchUI(); renderRecords(); }
-        function exitBatch() { batch=false; selected.clear(); updateBatchUI(); renderRecords(); }
-        function toggleSelect(id) { selected.has(id)?selected.delete(id):selected.add(id); if(selected.size===0&&batch) exitBatch(); else { updateBatchUI(); renderRecords(); } }
-        function updateBatchUI() {
-            const cnt = selected.size, active = view==='folder' && batch && cnt>0;
-            els.btnCancelSel.style.display = active||(batch?'':'none');
-            els.btnDelSel.style.display = active?'':'none';
-            els.btnMain.style.display = (batch&&cnt===0)?'none':'';
-            els.badge.style.display = active?'':'none';
-            if(active) { els.badge.textContent=cnt; els.btnDelSel.textContent=`删除(${cnt})`; }
+        // 操作菜单
+        function showActionSheet(title) {
+            els.actionTitle.textContent = title || '';
+            els.actionSheet.style.display = 'flex';
         }
-        els.btnCancelSel.onclick = exitBatch;
-        els.btnBatch.onclick = () => { if(records.length===0) toast('无记录'); else if(!batch) { enterBatch(); toast('点击选择要删除的账目'); } };
-        els.btnDelSel.onclick = () => { if(selected.size===0) return; showConfirm(`确定删除所选 ${selected.size} 条？`, '', async ()=>{ await api.records.del([...selected]); toast('已删除'); exitBatch(); renderRecords(); }); };
+        function hideActionSheet() {
+            els.actionSheet.style.display = 'none';
+            actionTarget = null;
+        }
+        els.btnActionCancel.addEventListener('click', hideActionSheet);
+        els.actionSheet.addEventListener('click', e => { if(e.target === els.actionSheet) hideActionSheet(); });
+
+        els.actionEditBtn.addEventListener('click', () => {
+            if(!actionTarget) return;
+            if(actionTarget.type === 'folder') {
+                openEditFolder(actionTarget.id, actionTarget.name);
+            } else if(actionTarget.type === 'record') {
+                openEditRecord(actionTarget.id);
+            }
+            hideActionSheet();
+        });
+
+        els.actionDelBtn.addEventListener('click', () => {
+            if(!actionTarget) return;
+            if(actionTarget.type === 'folder') {
+                confirmDelFolder(actionTarget.id, actionTarget.name);
+            } else if(actionTarget.type === 'record') {
+                confirmDeleteRecord(actionTarget.id, actionTarget.name);
+            }
+            hideActionSheet();
+        });
 
         function showConfirm(msg, sub, cb) {
             els.confirmMsg.textContent=msg; els.confirmSub.textContent=sub||'';
@@ -381,9 +454,16 @@
             if(editRecId) await api.records.put(editRecId, data); else await api.records.add(data);
             toast(editRecId?'已更新':'已记录'); closeRecModal(); renderRecords();
         };
+        function confirmDeleteRecord(rid, rname) {
+            showConfirm(`确定删除记录「${rname}」吗？`, '', async ()=>{
+                await api.records.del(rid);
+                toast('已删除');
+                renderRecords();
+            });
+        }
 
-        els.btnMain.onclick = () => { if(view==='folders') openAddFolder(); else { if(batch) exitBatch(); openAddRecord(); } };
-        els.btnBack.onclick = () => { if(batch) exitBatch(); goFolders(); };
+        els.btnMain.onclick = () => { if(view==='folders') openAddFolder(); else openAddRecord(); };
+        els.btnBack.onclick = () => goFolders();
 
         // 导出
         els.btnExport.onclick = async () => {
@@ -401,7 +481,7 @@
             toast(`导出成功 (${label})`);
         };
 
-        // 导入
+        // 导入（去重）
         els.btnImport.onclick = () => els.file.click();
         els.file.onchange = async e => {
             const file = e.target.files[0]; if(!file) return;
@@ -424,20 +504,16 @@
                     reader.onerror = rej;
                     reader.readAsArrayBuffer(file);
                 });
-
                 if(!data.length) return toast('文件中无有效数据');
-
                 const allExistingRecs = await api.records.all();
                 const existingSet = new Set();
                 allExistingRecs.forEach(r => {
                     const key = `${r.folderId}_${(r.name||'').trim()}_${Math.round((Number(r.amount)||0)*100)/100}_${r.date||''}`;
                     existingSet.add(key);
                 });
-
                 const existingFolders = await api.folders.all();
                 const folderMap = {};
                 existingFolders.forEach(f => folderMap[f.name] = f.id);
-
                 for (const rec of data) {
                     const fname = (rec['文件夹'] || '').trim() || '默认';
                     if (!folderMap[fname]) {
@@ -445,7 +521,6 @@
                         folderMap[fname] = newId;
                     }
                 }
-
                 const toImport = [];
                 let skipped = 0;
                 for (const rec of data) {
@@ -455,19 +530,10 @@
                     const amount = Math.round((parseFloat(rec['金额']) || 0) * 100) / 100;
                     const date = rec['日期'] || new Date().toISOString().slice(0,10);
                     const key = `${fid}_${name}_${amount}_${date}`;
-                    if (existingSet.has(key)) {
-                        skipped++;
-                    } else {
-                        toImport.push({ folderId: fid, name, amount, date, note: '' });
-                        existingSet.add(key);
-                    }
+                    if (existingSet.has(key)) { skipped++; }
+                    else { toImport.push({ folderId: fid, name, amount, date, note: '' }); existingSet.add(key); }
                 }
-
-                if (toImport.length === 0) {
-                    toast(`已跳过所有 ${skipped} 条重复记录，无新数据导入`);
-                    return;
-                }
-
+                if (toImport.length === 0) { toast(`已跳过所有 ${skipped} 条重复记录`); return; }
                 const BATCH = 50;
                 for (let i = 0; i < toImport.length; i += BATCH) {
                     const chunk = toImport.slice(i, i+BATCH);
@@ -479,15 +545,11 @@
                         tx.onerror = reject;
                     });
                 }
-
                 await ensurePresets();
                 const msg = `成功导入 ${toImport.length} 条记录` + (skipped > 0 ? `，跳过 ${skipped} 条重复` : '');
                 toast(msg);
                 if(view==='folders') renderFolders(); else renderRecords();
-            } catch(ex) {
-                console.error(ex);
-                toast('导入失败，请确认选择了 Excel 文件');
-            }
+            } catch(ex) { console.error(ex); toast('导入失败，请确认选择了 Excel 文件'); }
             els.file.value = '';
         };
 
