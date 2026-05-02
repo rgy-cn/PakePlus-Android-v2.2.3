@@ -30,11 +30,13 @@
         .folder-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
         .folder-name { font-weight:700; font-size:1rem; }
         .folder-summary { font-size:0.7rem; color:var(--ink-faded); }
-        .record-card { background:var(--paper-white); border-radius:8px; padding:12px 14px; margin-bottom:8px; border:1px solid rgba(180,150,110,0.25); display:flex; align-items:center; gap:12px; cursor:pointer; position:relative; box-shadow:var(--shadow-soft); }
-        .record-info { flex:1; }
+        .record-card { background:var(--paper-white); border-radius:8px; padding:12px 14px; margin-bottom:8px; border:1px solid rgba(180,150,110,0.25); display:flex; flex-direction:column; gap:4px; cursor:pointer; position:relative; box-shadow:var(--shadow-soft); }
+        .record-main { display:flex; align-items:center; gap:12px; }
+        .record-info { flex:1; min-width:0; }
         .record-name { font-weight:700; font-size:0.95rem; }
-        .record-meta { font-size:0.7rem; color:var(--ink-faded); }
-        .record-amount { font-weight:700; font-size:1.1rem; color:#722F37; }
+        .record-meta { font-size:0.7rem; color:var(--ink-faded); display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+        .record-amount { font-weight:700; font-size:1.1rem; color:#722F37; white-space:nowrap; }
+        .record-note { font-size:0.72rem; color:var(--ink-faded); margin-top:2px; padding-left:2px; border-left:2px solid var(--cream-darker); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
         .bottom-bar { flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0); padding:10px 16px calc(10px + var(--safe-bottom)); display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker); }
         .btn-main { padding:13px 25px; border-radius:25px; background:#722F37; color:#FDF3D1; border:none; font-size:1rem; font-weight:700; box-shadow:var(--shadow-stamp); cursor:pointer; }
         .btn-sec { padding:10px 14px; border-radius:18px; background:var(--paper-white); border:1.5px solid var(--cream-darker); color:var(--ink-light); font-size:0.8rem; cursor:pointer; }
@@ -154,7 +156,7 @@
     </div>
 </div>
 
-<!-- 操作菜单弹窗（长按弹出） -->
+<!-- 操作菜单弹窗 -->
 <div class="modal action-sheet" id="actionSheet" style="display:none;">
     <div class="sheet" style="padding:12px 0;">
         <div class="modal-handle"></div>
@@ -170,7 +172,7 @@
 
 <script>
     (() => {
-        const DB_NAME = 'RenQingBuV8', DB_VER = 1;
+        const DB_NAME = 'RenQingBuV9', DB_VER = 1;
         const F_STORE = 'folders', R_STORE = 'records';
         const PRESET = ['结婚','乔迁','满月','升学','祝寿','白事'];
         let db;
@@ -257,7 +259,6 @@
             await renderRecords();
         }
 
-        // 稳定的长按手势绑定
         function attachLongPress(el, type, id, name, onLongPress) {
             let startX = 0, startY = 0;
             let longPressTimer = null;
@@ -279,7 +280,6 @@
                     if (!triggered) {
                         triggered = true;
                         onLongPress({ type, id, name });
-                        // 触发触觉反馈（如果支持）
                         if (navigator.vibrate) navigator.vibrate(15);
                     }
                 }, 600);
@@ -326,7 +326,7 @@
             els.main.innerHTML = html;
             document.querySelectorAll('.folder-card').forEach(card => {
                 card.addEventListener('click', (e) => {
-                    if (actionTarget) return; // 防止长按后触发点击
+                    if (actionTarget) return;
                     goFolder(+card.dataset.fid, card.dataset.fname);
                 });
                 attachLongPress(card, 'folder', +card.dataset.fid, card.dataset.fname, (target) => {
@@ -342,10 +342,21 @@
             if(!filtered.length) { els.main.innerHTML=`<div class="empty-state"><div style="font-size:2rem;">📜</div><p>${search?'无匹配记录':'还没有记录'}</p></div>`; }
             else {
                 let html = '';
-                filtered.forEach(r => html += `<div class="record-card" data-rid="${r.id}" data-rname="${esc(r.name||'未命名')}">
-                    <div class="record-info"><div class="record-name">${esc(r.name||'未命名')}</div><div class="record-meta">📅 ${r.date||''}</div></div>
-                    <div class="record-amount">¥ ${Number(r.amount||0).toFixed(2)}</div>
-                </div>`);
+                filtered.forEach(r => {
+                    const hasNote = r.note && r.note.trim();
+                    html += `<div class="record-card" data-rid="${r.id}" data-rname="${esc(r.name||'未命名')}">
+                        <div class="record-main">
+                            <div class="record-info">
+                                <div class="record-name">${esc(r.name||'未命名')}</div>
+                                <div class="record-meta">
+                                    <span>📅 ${r.date||'未知日期'}</span>
+                                </div>
+                            </div>
+                            <div class="record-amount">¥ ${Number(r.amount||0).toFixed(2)}</div>
+                        </div>
+                        ${hasNote ? `<div class="record-note">💬 ${esc(r.note)}</div>` : ''}
+                    </div>`;
+                });
                 els.main.innerHTML = html;
                 document.querySelectorAll('.record-card').forEach(card => {
                     attachLongPress(card, 'record', +card.dataset.rid, card.dataset.rname, (target) => {
@@ -361,7 +372,6 @@
             els._st = setTimeout(()=>{ search=els.searchInput.value; if(view==='folder') renderRecords(); },200);
         });
 
-        // 操作菜单
         function showActionSheet(title) {
             els.actionTitle.textContent = title || '';
             els.actionSheet.style.display = 'flex';
@@ -464,14 +474,21 @@
         els.btnMain.onclick = () => { if(view==='folders') openAddFolder(); else openAddRecord(); };
         els.btnBack.onclick = () => goFolders();
 
-        // 导出
+        // 导出：增加备注列，对象名称改为姓名
         els.btnExport.onclick = async () => {
             const recs = view==='folder' ? await api.records.byFolder(folderId) : await api.records.all();
             if(!recs.length) return toast('暂无数据');
             const label = view==='folder' ? folderName : '全部';
             const fmap={}; folders.forEach(f=>fmap[f.id]=f.name);
-            const data = recs.map(r=>({文件夹:fmap[r.folderId]||'', 对象名称:r.name||'', 金额:r.amount||0, 日期:r.date||''}));
+            const data = recs.map(r => ({
+                '文件夹': fmap[r.folderId] || '',
+                '姓名': r.name || '',
+                '金额': r.amount || 0,
+                '日期': r.date || '',
+                '备注': r.note || ''
+            }));
             const ws = XLSX.utils.json_to_sheet(data);
+            ws['!cols'] = [{wch:12},{wch:15},{wch:12},{wch:14},{wch:25}];
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '人情账目');
             const now = new Date(); const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
             const filename = `人情账目_${label}_${ts}.xlsx`;
@@ -480,7 +497,7 @@
             toast(`导出成功 (${label})`);
         };
 
-        // 导入（去重）
+        // 导入（去重）—— 适配新列名
         els.btnImport.onclick = () => els.file.click();
         els.file.onchange = async e => {
             const file = e.target.files[0]; if(!file) return;
@@ -525,12 +542,13 @@
                 for (const rec of data) {
                     const fname = (rec['文件夹'] || '').trim() || '默认';
                     const fid = folderMap[fname];
-                    const name = (rec['对象名称'] || '').trim();
+                    const name = (rec['姓名'] || rec['对象名称'] || '').trim(); // 兼容新旧列名
                     const amount = Math.round((parseFloat(rec['金额']) || 0) * 100) / 100;
                     const date = rec['日期'] || new Date().toISOString().slice(0,10);
+                    const note = rec['备注'] || '';
                     const key = `${fid}_${name}_${amount}_${date}`;
                     if (existingSet.has(key)) { skipped++; }
-                    else { toImport.push({ folderId: fid, name, amount, date, note: '' }); existingSet.add(key); }
+                    else { toImport.push({ folderId: fid, name, amount, date, note }); existingSet.add(key); }
                 }
                 if (toImport.length === 0) { toast(`已跳过所有 ${skipped} 条重复记录`); return; }
                 const BATCH = 50;
