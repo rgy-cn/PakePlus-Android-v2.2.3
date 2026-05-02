@@ -30,32 +30,17 @@
         .folder-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
         .folder-name { font-weight:700; font-size:1rem; }
         .folder-summary { font-size:0.7rem; color:var(--ink-faded); }
-        .record-card {
-            background:var(--paper-white); border-radius:8px; padding:12px 14px; margin-bottom:8px;
-            border:1px solid rgba(180,150,110,0.25); display:flex; align-items:center; gap:12px;
-            cursor:pointer; position:relative; box-shadow:var(--shadow-soft);
-        }
+        .record-card { background:var(--paper-white); border-radius:8px; padding:12px 14px; margin-bottom:8px; border:1px solid rgba(180,150,110,0.25); display:flex; align-items:center; gap:12px; cursor:pointer; position:relative; box-shadow:var(--shadow-soft); }
         .record-info { flex:1; }
         .record-name { font-weight:700; font-size:0.95rem; }
         .record-meta { font-size:0.7rem; color:var(--ink-faded); }
         .record-amount { font-weight:700; font-size:1.1rem; color:#722F37; }
-        .bottom-bar {
-            flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0);
-            padding:10px 16px calc(10px + var(--safe-bottom));
-            display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker);
-        }
+        .bottom-bar { flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0); padding:10px 16px calc(10px + var(--safe-bottom)); display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker); }
         .btn-main { padding:13px 25px; border-radius:25px; background:#722F37; color:#FDF3D1; border:none; font-size:1rem; font-weight:700; box-shadow:var(--shadow-stamp); cursor:pointer; }
         .btn-sec { padding:10px 14px; border-radius:18px; background:var(--paper-white); border:1.5px solid var(--cream-darker); color:var(--ink-light); font-size:0.8rem; cursor:pointer; }
-        .modal {
-            position:fixed; inset:0; background:rgba(30,15,8,0.65); z-index:100;
-            display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s;
-        }
+        .modal { position:fixed; inset:0; background:rgba(30,15,8,0.65); z-index:100; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s; }
         @keyframes fadeIn{ from{opacity:0} }
-        .sheet {
-            background:var(--paper); border-radius:18px 18px 0 0; width:100%; max-width:480px;
-            max-height:85vh; overflow-y:auto; padding:18px 18px calc(18px + var(--safe-bottom));
-            box-shadow:0 -8px 40px rgba(0,0,0,0.3); animation:slideUp 0.3s;
-        }
+        .sheet { background:var(--paper); border-radius:18px 18px 0 0; width:100%; max-width:480px; max-height:85vh; overflow-y:auto; padding:18px 18px calc(18px + var(--safe-bottom)); box-shadow:0 -8px 40px rgba(0,0,0,0.3); animation:slideUp 0.3s; }
         @keyframes slideUp{ from{transform:translateY(100%)} }
         .modal-handle { width:36px; height:4px; background:var(--cream-darker); margin:0 auto 14px; border-radius:2px; }
         .modal-title { font-size:1.1rem; text-align:center; margin-bottom:14px; color:#5A1F26; font-weight:700; }
@@ -65,31 +50,14 @@
         .btn { font-weight:700; cursor:pointer; border:none; }
         .btn-primary { background:#722F37; color:#FDF3D1; }
         .btn-danger { background:#A8423A; color:white; }
-        .toast {
-            position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:200;
-            padding:10px 20px; border-radius:20px; background:#3C2415; color:#FDF3D1;
-            font-size:0.85rem; box-shadow:0 6px 24px rgba(0,0,0,0.3);
-            animation:toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards; pointer-events:none;
-        }
+        .toast { position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:200; padding:10px 20px; border-radius:20px; background:#3C2415; color:#FDF3D1; font-size:0.85rem; box-shadow:0 6px 24px rgba(0,0,0,0.3); animation:toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards; pointer-events:none; }
         @keyframes toastIn{ from{opacity:0; transform:translateX(-50%) translateY(-16px)} }
         @keyframes toastOut{ to{opacity:0; transform:translateX(-50%) translateY(-12px)} }
-
-        /* 操作菜单样式 */
-        .action-sheet .sheet { padding: 0; border-radius: 18px 18px 0 0; }
-        .action-item {
-            display:block; width:100%; padding:16px; text-align:center;
-            border-bottom:1px solid var(--cream-darker); background:var(--paper-white);
-            font-size:1rem; color:var(--ink); cursor:pointer; font-family:var(--font-kai);
-            transition: background 0.15s;
-        }
+        .action-sheet .sheet { padding:0; border-radius:18px 18px 0 0; }
+        .action-item { display:block; width:100%; padding:16px; text-align:center; border-bottom:1px solid var(--cream-darker); background:var(--paper-white); font-size:1rem; color:var(--ink); cursor:pointer; font-family:var(--font-kai); transition:background 0.15s; }
         .action-item:active { background:var(--cream-dark); }
-        .action-item.danger-item { color:var(--danger); font-weight:700; }
-        .action-cancel {
-            display:block; width:100%; padding:16px; text-align:center;
-            background:var(--paper-white); border:none; font-size:1rem;
-            color:var(--ink-light); cursor:pointer; font-family:var(--font-kai);
-            margin-top:8px; border-radius:18px;
-        }
+        .danger-item { color:var(--danger); font-weight:700; }
+        .action-cancel { display:block; width:100%; padding:16px; text-align:center; background:var(--paper-white); border:none; font-size:1rem; color:var(--ink-light); cursor:pointer; font-family:var(--font-kai); margin-top:8px; border-radius:18px; }
         .action-cancel:active { background:var(--cream-dark); }
     </style>
 </head>
@@ -186,7 +154,7 @@
     </div>
 </div>
 
-<!-- 操作菜单弹窗（用于长按） -->
+<!-- 操作菜单弹窗（长按弹出） -->
 <div class="modal action-sheet" id="actionSheet" style="display:none;">
     <div class="sheet" style="padding:12px 0;">
         <div class="modal-handle"></div>
@@ -202,7 +170,7 @@
 
 <script>
     (() => {
-        const DB_NAME = 'RenQingBuV7', DB_VER = 1;
+        const DB_NAME = 'RenQingBuV8', DB_VER = 1;
         const F_STORE = 'folders', R_STORE = 'records';
         const PRESET = ['结婚','乔迁','满月','升学','祝寿','白事'];
         let db;
@@ -249,8 +217,7 @@
         let view = 'folders', folderId = null, folderName = '';
         let folders = [], records = [], search = '';
         let editFolderId = null, editRecId = null;
-        let longPressTimer = null;
-        let actionTarget = null; // 当前长按的目标对象 { type: 'folder'/'record', id: ..., name: ... }
+        let actionTarget = null;
 
         const $ = id => document.getElementById(id);
         const els = {
@@ -290,6 +257,55 @@
             await renderRecords();
         }
 
+        // 稳定的长按手势绑定
+        function attachLongPress(el, type, id, name, onLongPress) {
+            let startX = 0, startY = 0;
+            let longPressTimer = null;
+            let triggered = false;
+
+            const clear = () => {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                triggered = false;
+            };
+
+            el.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                triggered = false;
+                clearTimeout(longPressTimer);
+                longPressTimer = setTimeout(() => {
+                    if (!triggered) {
+                        triggered = true;
+                        onLongPress({ type, id, name });
+                        // 触发触觉反馈（如果支持）
+                        if (navigator.vibrate) navigator.vibrate(15);
+                    }
+                }, 600);
+            }, { passive: false });
+
+            el.addEventListener('touchmove', (e) => {
+                if (!longPressTimer) return;
+                const touch = e.touches[0];
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                    clear();
+                }
+            }, { passive: false });
+
+            el.addEventListener('touchend', (e) => {
+                clear();
+                if (triggered) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+
+            el.addEventListener('touchcancel', clear);
+        }
+
         async function renderFolders() {
             folders = await api.folders.all();
             const allRecs = await api.records.all();
@@ -309,19 +325,14 @@
             html += '</div>';
             els.main.innerHTML = html;
             document.querySelectorAll('.folder-card').forEach(card => {
-                card.addEventListener('click', () => {
+                card.addEventListener('click', (e) => {
+                    if (actionTarget) return; // 防止长按后触发点击
                     goFolder(+card.dataset.fid, card.dataset.fname);
                 });
-                // 长按文件夹
-                card.addEventListener('pointerdown', e => {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = setTimeout(() => {
-                        actionTarget = { type: 'folder', id: +card.dataset.fid, name: card.dataset.fname };
-                        showActionSheet(`文件夹：${card.dataset.fname}`);
-                    }, 600);
+                attachLongPress(card, 'folder', +card.dataset.fid, card.dataset.fname, (target) => {
+                    actionTarget = target;
+                    showActionSheet(`文件夹：${target.name}`);
                 });
-                card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
-                card.addEventListener('pointermove', () => clearTimeout(longPressTimer));
             });
         }
 
@@ -331,22 +342,16 @@
             if(!filtered.length) { els.main.innerHTML=`<div class="empty-state"><div style="font-size:2rem;">📜</div><p>${search?'无匹配记录':'还没有记录'}</p></div>`; }
             else {
                 let html = '';
-                filtered.forEach(r => html += `<div class="record-card" data-rid="${r.id}" data-rname="${esc(r.name)}">
+                filtered.forEach(r => html += `<div class="record-card" data-rid="${r.id}" data-rname="${esc(r.name||'未命名')}">
                     <div class="record-info"><div class="record-name">${esc(r.name||'未命名')}</div><div class="record-meta">📅 ${r.date||''}</div></div>
                     <div class="record-amount">¥ ${Number(r.amount||0).toFixed(2)}</div>
                 </div>`);
                 els.main.innerHTML = html;
                 document.querySelectorAll('.record-card').forEach(card => {
-                    // 长按记录
-                    card.addEventListener('pointerdown', e => {
-                        clearTimeout(longPressTimer);
-                        longPressTimer = setTimeout(() => {
-                            actionTarget = { type: 'record', id: +card.dataset.rid, name: card.dataset.rname || '未命名' };
-                            showActionSheet(`记录：${card.dataset.rname || '未命名'}`);
-                        }, 600);
+                    attachLongPress(card, 'record', +card.dataset.rid, card.dataset.rname, (target) => {
+                        actionTarget = target;
+                        showActionSheet(`记录：${target.name}`);
                     });
-                    card.addEventListener('pointerup', () => clearTimeout(longPressTimer));
-                    card.addEventListener('pointermove', () => clearTimeout(longPressTimer));
                 });
             }
         }
@@ -370,21 +375,15 @@
 
         els.actionEditBtn.addEventListener('click', () => {
             if(!actionTarget) return;
-            if(actionTarget.type === 'folder') {
-                openEditFolder(actionTarget.id, actionTarget.name);
-            } else if(actionTarget.type === 'record') {
-                openEditRecord(actionTarget.id);
-            }
+            if(actionTarget.type === 'folder') openEditFolder(actionTarget.id, actionTarget.name);
+            else if(actionTarget.type === 'record') openEditRecord(actionTarget.id);
             hideActionSheet();
         });
 
         els.actionDelBtn.addEventListener('click', () => {
             if(!actionTarget) return;
-            if(actionTarget.type === 'folder') {
-                confirmDelFolder(actionTarget.id, actionTarget.name);
-            } else if(actionTarget.type === 'record') {
-                confirmDeleteRecord(actionTarget.id, actionTarget.name);
-            }
+            if(actionTarget.type === 'folder') confirmDelFolder(actionTarget.id, actionTarget.name);
+            else if(actionTarget.type === 'record') confirmDeleteRecord(actionTarget.id, actionTarget.name);
             hideActionSheet();
         });
 
