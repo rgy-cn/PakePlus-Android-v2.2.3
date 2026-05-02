@@ -7,120 +7,46 @@
     <title>人情簿 · 人情账本</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root {
-            --cream: #FDF3D1; --cream-dark: #F5E4B7; --cream-darker: #E8D5A0;
-            --burgundy: #722F37; --burgundy-light: #8B3A44; --burgundy-dark: #5A1F26;
-            --ink: #3C2415; --ink-light: #6B4D3A; --ink-faded: #9B7D6A;
-            --paper: #FBF7EC; --paper-white: #FFFEF9; --danger: #A8423A;
-            --shadow-soft: 0 2px 12px rgba(60,36,21,0.08);
-            --shadow-stamp: 0 2px 8px rgba(114,47,55,0.25);
-            --font-kai: 'KaiTi', 'STKaiti', '楷体', serif;
-            --safe-bottom: env(safe-area-inset-bottom, 16px);
-        }
+        :root { --cream: #FDF3D1; --cream-dark: #F5E4B7; --cream-darker: #E8D5A0; --burgundy: #722F37; --burgundy-light: #8B3A44; --burgundy-dark: #5A1F26; --ink: #3C2415; --ink-light: #6B4D3A; --ink-faded: #9B7D6A; --paper: #FBF7EC; --paper-white: #FFFEF9; --danger: #A8423A; --shadow-soft: 0 2px 12px rgba(60,36,21,0.08); --shadow-stamp: 0 2px 8px rgba(114,47,55,0.25); --font-kai: 'KaiTi', 'STKaiti', '楷体', serif; --safe-bottom: env(safe-area-inset-bottom, 16px); }
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
         input,textarea { user-select:text; }
         html { height:100%; overflow:hidden; background:#3C2415; }
-        body {
-            font-family:var(--font-kai); background:#3C2415; color:var(--ink);
-            height:100%; max-width:480px; margin:0 auto; display:flex; flex-direction:column;
-            overflow:hidden; box-shadow:0 0 60px rgba(0,0,0,0.5); position:relative;
-        }
-        body::before {
-            content:''; position:absolute; inset:0; z-index:0;
-            background:radial-gradient(ellipse at 20% 10%, rgba(200,160,100,0.06), transparent 60%),
-                      radial-gradient(ellipse at 80% 30%, rgba(180,140,80,0.04), transparent 50%),
-                      radial-gradient(ellipse at 50% 70%, rgba(160,120,60,0.05), transparent 55%),
-                      url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-            background-color:var(--paper); pointer-events:none;
-        }
+        body { font-family:var(--font-kai); background:#3C2415; color:var(--ink); height:100%; max-width:480px; margin:0 auto; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 0 60px rgba(0,0,0,0.5); position:relative; }
+        body::before { content:''; position:absolute; inset:0; z-index:0; background:radial-gradient(ellipse at 20% 10%, rgba(200,160,100,0.06), transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(180,140,80,0.04), transparent 50%), radial-gradient(ellipse at 50% 70%, rgba(160,120,60,0.05), transparent 55%), url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); background-color:var(--paper); pointer-events:none; }
         .app-container { position:relative; z-index:1; display:flex; flex-direction:column; height:100%; }
-        .header {
-            background:linear-gradient(180deg, #FDF3D1, #F8E8C0);
-            padding:0 14px; border-bottom:2px solid var(--cream-darker);
-            display:flex; align-items:center; justify-content:space-between;
-            height:52px; flex-shrink:0; position:relative; box-shadow:0 1px 6px rgba(60,36,21,0.06);
-        }
+        .header { background:linear-gradient(180deg, #FDF3D1, #F8E8C0); padding:0 14px; border-bottom:2px solid var(--cream-darker); display:flex; align-items:center; justify-content:space-between; height:52px; flex-shrink:0; position:relative; box-shadow:0 1px 6px rgba(60,36,21,0.06); }
         .header-part { display:flex; align-items:center; gap:6px; z-index:2; }
-        .header-title {
-            font-weight:700; font-size:1.2rem; color:#5A1F26;
-            position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap;
-        }
-        .btn-icon {
-            width:34px; height:34px; border-radius:50%; border:1.5px solid var(--cream-darker);
-            background:var(--paper-white); color:#722F37; font-size:0.9rem;
-            cursor:pointer; display:flex; align-items:center; justify-content:center;
-            transition:0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.06);
-        }
+        .header-title { font-weight:700; font-size:1.2rem; color:#5A1F26; position:absolute; left:50%; transform:translateX(-50%); white-space:nowrap; }
+        .btn-icon { width:34px; height:34px; border-radius:50%; border:1.5px solid var(--cream-darker); background:var(--paper-white); color:#722F37; font-size:0.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
         .btn-icon:active { background:var(--cream-dark); transform:scale(0.94); }
-        .badge {
-            position:absolute; top:-4px; right:-4px; width:16px; height:16px;
-            border-radius:50%; background:#722F37; color:#FDF3D1; font-size:0.55rem;
-            font-weight:700; display:flex; align-items:center; justify-content:center;
-        }
+        .badge { position:absolute; top:-4px; right:-4px; width:16px; height:16px; border-radius:50%; background:#722F37; color:#FDF3D1; font-size:0.55rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
         .search-wrap { padding:8px 14px; background:var(--paper); border-bottom:1px solid rgba(0,0,0,0.04); }
         .search-box { position:relative; }
         .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--ink-faded); }
-        .search-input {
-            width:100%; padding:9px 10px 9px 30px; border-radius:18px;
-            border:1.5px solid var(--cream-darker); background:var(--paper-white);
-            font-size:0.85rem; outline:none; box-shadow:inset 0 1px 2px rgba(0,0,0,0.03);
-        }
+        .search-input { width:100%; padding:9px 10px 9px 30px; border-radius:18px; border:1.5px solid var(--cream-darker); background:var(--paper-white); font-size:0.85rem; outline:none; box-shadow:inset 0 1px 2px rgba(0,0,0,0.03); }
         .main-content { flex:1; overflow-y:auto; padding:10px 14px 20px; background:var(--paper); }
         .folder-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .folder-card {
-            background:var(--paper-white); border-radius:8px; padding:16px 10px;
-            border:1.5px solid rgba(180,150,110,0.3); text-align:center; position:relative;
-            display:flex; flex-direction:column; align-items:center; gap:8px;
-            cursor:pointer; box-shadow:var(--shadow-soft);
-        }
+        .folder-card { background:var(--paper-white); border-radius:8px; padding:16px 10px; border:1.5px solid rgba(180,150,110,0.3); text-align:center; position:relative; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; box-shadow:var(--shadow-soft); }
         .folder-card:active { transform:scale(0.96); }
         .folder-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
         .folder-name { font-weight:700; font-size:1rem; }
         .folder-summary { font-size:0.7rem; color:var(--ink-faded); }
         .folder-actions { position:absolute; top:6px; right:8px; display:flex; gap:4px; opacity:0; }
         .folder-card:active .folder-actions, .folder-card:hover .folder-actions { opacity:1; }
-        .record-card {
-            background:var(--paper-white); border-radius:8px; padding:12px 14px;
-            margin-bottom:8px; border:1px solid rgba(180,150,110,0.25);
-            display:flex; align-items:center; gap:12px; cursor:pointer; position:relative;
-            box-shadow:var(--shadow-soft);
-        }
+        .record-card { background:var(--paper-white); border-radius:8px; padding:12px 14px; margin-bottom:8px; border:1px solid rgba(180,150,110,0.25); display:flex; align-items:center; gap:12px; cursor:pointer; position:relative; box-shadow:var(--shadow-soft); }
         .record-card.selected { border-color:#722F37; background:#FFFBF5; }
-        .record-card.selected::after {
-            content:'✓'; position:absolute; top:6px; right:10px;
-            width:20px; height:20px; border-radius:50%; background:#722F37;
-            color:#FDF3D1; font-size:0.7rem; display:flex; align-items:center; justify-content:center;
-        }
+        .record-card.selected::after { content:'✓'; position:absolute; top:6px; right:10px; width:20px; height:20px; border-radius:50%; background:#722F37; color:#FDF3D1; font-size:0.7rem; display:flex; align-items:center; justify-content:center; }
         .record-info { flex:1; }
         .record-name { font-weight:700; font-size:0.95rem; }
         .record-meta { font-size:0.7rem; color:var(--ink-faded); }
         .record-amount { font-weight:700; font-size:1.1rem; color:#722F37; }
-        .bottom-bar {
-            flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0);
-            padding:10px 16px calc(10px + var(--safe-bottom));
-            display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker);
-        }
-        .btn-main {
-            padding:13px 25px; border-radius:25px; background:#722F37;
-            color:#FDF3D1; border:none; font-size:1rem; font-weight:700;
-            box-shadow:var(--shadow-stamp); cursor:pointer;
-        }
-        .btn-sec {
-            padding:10px 14px; border-radius:18px; background:var(--paper-white);
-            border:1.5px solid var(--cream-darker); color:var(--ink-light);
-            font-size:0.8rem; cursor:pointer;
-        }
+        .bottom-bar { flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0); padding:10px 16px calc(10px + var(--safe-bottom)); display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker); }
+        .btn-main { padding:13px 25px; border-radius:25px; background:#722F37; color:#FDF3D1; border:none; font-size:1rem; font-weight:700; box-shadow:var(--shadow-stamp); cursor:pointer; }
+        .btn-sec { padding:10px 14px; border-radius:18px; background:var(--paper-white); border:1.5px solid var(--cream-darker); color:var(--ink-light); font-size:0.8rem; cursor:pointer; }
         .btn-danger { color:#A8423A; border-color:rgba(168,66,58,0.4); }
-        .modal {
-            position:fixed; inset:0; background:rgba(30,15,8,0.65); z-index:100;
-            display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s;
-        }
+        .modal { position:fixed; inset:0; background:rgba(30,15,8,0.65); z-index:100; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s; }
         @keyframes fadeIn{ from{opacity:0} }
-        .sheet {
-            background:var(--paper); border-radius:18px 18px 0 0; width:100%; max-width:480px;
-            max-height:85vh; overflow-y:auto; padding:18px 18px calc(18px + var(--safe-bottom));
-            box-shadow:0 -8px 40px rgba(0,0,0,0.3); animation:slideUp 0.3s;
-        }
+        .sheet { background:var(--paper); border-radius:18px 18px 0 0; width:100%; max-width:480px; max-height:85vh; overflow-y:auto; padding:18px 18px calc(18px + var(--safe-bottom)); box-shadow:0 -8px 40px rgba(0,0,0,0.3); animation:slideUp 0.3s; }
         @keyframes slideUp{ from{transform:translateY(100%)} }
         .modal-handle { width:36px; height:4px; background:var(--cream-darker); margin:0 auto 14px; border-radius:2px; }
         .modal-title { font-size:1.1rem; text-align:center; margin-bottom:14px; color:#5A1F26; font-weight:700; }
@@ -129,12 +55,7 @@
         .form-input,.form-textarea { width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--cream-darker); background:var(--paper-white); font-size:0.85rem; outline:none; }
         .btn { font-weight:700; cursor:pointer; border:none; }
         .btn-primary { background:#722F37; color:#FDF3D1; }
-        .toast {
-            position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:200;
-            padding:10px 20px; border-radius:20px; background:#3C2415; color:#FDF3D1;
-            font-size:0.85rem; box-shadow:0 6px 24px rgba(0,0,0,0.3);
-            animation:toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards; pointer-events:none;
-        }
+        .toast { position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:200; padding:10px 20px; border-radius:20px; background:#3C2415; color:#FDF3D1; font-size:0.85rem; box-shadow:0 6px 24px rgba(0,0,0,0.3); animation:toastIn 0.3s ease, toastOut 0.3s ease 1.8s forwards; pointer-events:none; }
         @keyframes toastIn{ from{opacity:0; transform:translateX(-50%) translateY(-16px)} }
         @keyframes toastOut{ to{opacity:0; transform:translateX(-50%) translateY(-12px)} }
     </style>
@@ -142,8 +63,8 @@
 <body>
 <div class="app-container" id="appContainer">
     <header class="header">
+        <!-- 左侧仅保留返回按钮，移除退出按钮 -->
         <div class="header-part" style="min-width:80px; justify-content:flex-start;">
-            <button class="btn-icon" id="btnExit" style="display:none;">✕</button>
             <button class="btn-icon" id="btnBack" style="display:none;">←</button>
         </div>
         <span class="header-title" id="headerTitle">人情簿</span>
@@ -236,12 +157,12 @@
     </div>
 </div>
 
-<input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none;">
+<input type="file" id="importFileInput" accept="*/*" style="display:none;">
 <div id="toastContainer"></div>
 
 <script>
     (() => {
-        const DB_NAME = 'RenQingBuV3', DB_VER = 1;
+        const DB_NAME = 'RenQingBuV5', DB_VER = 1;
         const F_STORE = 'folders', R_STORE = 'records';
         const PRESET = ['结婚','乔迁','满月','升学','祝寿','白事'];
         let db;
@@ -285,7 +206,6 @@
             for (const p of PRESET) if (!names.has(p)) await api.folders.add(p);
         }
 
-        // 状态
         let view = 'folders', folderId = null, folderName = '';
         let folders = [], records = [], search = '', selected = new Set(), batch = false;
         let editFolderId = null, editRecId = null;
@@ -295,7 +215,7 @@
             headerTitle: $('headerTitle'), searchInput: $('searchInput'), main: $('mainContent'),
             btnMain: $('btnMainAction'), btnCancelSel: $('btnCancelSelect'), btnDelSel: $('btnDeleteSelected'),
             btnBatch: $('btnBatchDelete'), badge: $('batchBadge'), btnExport: $('btnExport'), btnImport: $('btnImport'),
-            file: $('importFileInput'), btnExit: $('btnExit'), btnBack: $('btnBack'),
+            file: $('importFileInput'), btnBack: $('btnBack'),
             folderModal: $('folderModal'), folderTitle: $('folderModalTitle'), folderId: $('folderId'), inputFolderName: $('inputFolderName'),
             folderDelArea: $('folderDeleteArea'), btnDelFolder: $('btnDeleteFolder'),
             recModal: $('recordModal'), recTitle: $('recordModalTitle'), recId: $('recordId'),
@@ -308,7 +228,7 @@
         function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
         function updateHeader() {
-            els.btnExit.style.display = view==='folders' ? 'flex' : 'none';
+            // 主页隐藏返回按钮，文件夹内显示返回按钮
             els.btnBack.style.display = view==='folders' ? 'none' : 'flex';
         }
         async function goFolders() {
@@ -456,7 +376,7 @@
         };
 
         els.btnMain.onclick = () => { if(view==='folders') openAddFolder(); else { if(batch) exitBatch(); openAddRecord(); } };
-        els.btnExit.onclick = () => { try { if(window.Android?.exitApp) window.Android.exitApp(); else if(navigator.app?.exitApp) navigator.app.exitApp(); else window.close(); } catch(e) {} };
+        // 移除退出按钮逻辑，保留返回按钮
         els.btnBack.onclick = () => { if(batch) exitBatch(); goFolders(); };
 
         // 导出（时间戳防重名）
@@ -475,19 +395,32 @@
             toast(`导出成功 (${label})`);
         };
 
-        // 导入（去重：跳过同一文件夹下相同对象+金额+日期的记录）
+        // 导入（去重，允许所有文件）
         els.btnImport.onclick = () => els.file.click();
         els.file.onchange = async e => {
             const file = e.target.files[0]; if(!file) return;
             try {
                 const data = await new Promise((res, rej) => {
                     const reader = new FileReader();
-                    reader.onload = ev => { try { const wb = XLSX.read(ev.target.result, {type:'array'}); res(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:''})); } catch(ex) { rej(ex); } };
-                    reader.onerror = rej; reader.readAsArrayBuffer(file);
+                    reader.onload = ev => {
+                        try {
+                            const arr = new Uint8Array(ev.target.result);
+                            const header = String.fromCharCode(...arr.slice(0, 4));
+                            if (header.startsWith('PK') || header.startsWith('D0CF')) {
+                                const wb = XLSX.read(arr, {type:'array'});
+                                if (!wb.SheetNames.length) return rej(new Error('空文件'));
+                                res(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:''}));
+                            } else {
+                                rej(new Error('非 Excel 文件'));
+                            }
+                        } catch(ex) { rej(ex); }
+                    };
+                    reader.onerror = rej;
+                    reader.readAsArrayBuffer(file);
                 });
-                if(!data.length) return toast('文件中无数据');
 
-                // 获取现有所有记录，构建去重集合
+                if(!data.length) return toast('文件中无有效数据');
+
                 const allExistingRecs = await api.records.all();
                 const existingSet = new Set();
                 allExistingRecs.forEach(r => {
@@ -495,12 +428,10 @@
                     existingSet.add(key);
                 });
 
-                // 获取现有文件夹映射
                 const existingFolders = await api.folders.all();
                 const folderMap = {};
                 existingFolders.forEach(f => folderMap[f.name] = f.id);
 
-                // 先创建缺失的文件夹并更新映射
                 for (const rec of data) {
                     const fname = (rec['文件夹'] || '').trim() || '默认';
                     if (!folderMap[fname]) {
@@ -509,7 +440,6 @@
                     }
                 }
 
-                // 过滤掉重复记录
                 const toImport = [];
                 let skipped = 0;
                 for (const rec of data) {
@@ -523,7 +453,7 @@
                         skipped++;
                     } else {
                         toImport.push({ folderId: fid, name, amount, date, note: '' });
-                        existingSet.add(key); // 添加到集合中，防止批量导入自身重复
+                        existingSet.add(key);
                     }
                 }
 
@@ -532,7 +462,6 @@
                     return;
                 }
 
-                // 分批写入非重复记录
                 const BATCH = 50;
                 for (let i = 0; i < toImport.length; i += BATCH) {
                     const chunk = toImport.slice(i, i+BATCH);
@@ -551,12 +480,11 @@
                 if(view==='folders') renderFolders(); else renderRecords();
             } catch(ex) {
                 console.error(ex);
-                toast('导入失败，请检查文件格式');
+                toast('导入失败，请确认选择了 Excel 文件');
             }
             els.file.value = '';
         };
 
-        // 辅助：get record by id
         api.records.get = id => new Promise(r => { const t = db.transaction(R_STORE); t.objectStore(R_STORE).get(id).onsuccess = e => r(e.target.result); });
 
         openDB().then(async () => {
