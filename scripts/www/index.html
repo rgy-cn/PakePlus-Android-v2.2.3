@@ -35,8 +35,18 @@
         .record-info { flex:1; min-width:0; }
         .record-name { font-weight:700; font-size:0.95rem; }
         .record-meta { font-size:0.7rem; color:var(--ink-faded); display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
-        .record-amount { font-weight:700; font-size:1.1rem; color:#722F37; white-space:nowrap; }
-        .record-note { font-size:0.72rem; color:var(--ink-faded); margin-top:2px; padding-left:2px; border-left:2px solid var(--cream-darker); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+        .record-amount { font-weight:700; font-size:1.1rem; color:#722F37; white-space:nowrap; flex-shrink:0; }
+        .record-note { 
+            font-weight: bold; 
+            color: var(--ink-light); 
+            font-size: 0.75rem; 
+            text-align: center; 
+            flex: 1; 
+            min-width: 0;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
         .bottom-bar { flex-shrink:0; background:linear-gradient(0deg, #FDF3D1, #F8E8C0); padding:10px 16px calc(10px + var(--safe-bottom)); display:flex; justify-content:center; gap:8px; border-top:2px solid var(--cream-darker); }
         .btn-main { padding:13px 25px; border-radius:25px; background:#722F37; color:#FDF3D1; border:none; font-size:1rem; font-weight:700; box-shadow:var(--shadow-stamp); cursor:pointer; }
         .btn-sec { padding:10px 14px; border-radius:18px; background:var(--paper-white); border:1.5px solid var(--cream-darker); color:var(--ink-light); font-size:0.8rem; cursor:pointer; }
@@ -172,7 +182,7 @@
 
 <script>
     (() => {
-        const DB_NAME = 'RenQingBuV9', DB_VER = 1;
+        const DB_NAME = 'RenQingBuV10', DB_VER = 1;
         const F_STORE = 'folders', R_STORE = 'records';
         const PRESET = ['结婚','乔迁','满月','升学','祝寿','白事'];
         let db;
@@ -352,9 +362,9 @@
                                     <span>📅 ${r.date||'未知日期'}</span>
                                 </div>
                             </div>
+                            ${hasNote ? `<div class="record-note">💬 ${esc(r.note)}</div>` : ''}
                             <div class="record-amount">¥ ${Number(r.amount||0).toFixed(2)}</div>
                         </div>
-                        ${hasNote ? `<div class="record-note">💬 ${esc(r.note)}</div>` : ''}
                     </div>`;
                 });
                 els.main.innerHTML = html;
@@ -474,7 +484,7 @@
         els.btnMain.onclick = () => { if(view==='folders') openAddFolder(); else openAddRecord(); };
         els.btnBack.onclick = () => goFolders();
 
-        // 导出：增加备注列，对象名称改为姓名
+        // 导出：姓名、金额、日期、备注
         els.btnExport.onclick = async () => {
             const recs = view==='folder' ? await api.records.byFolder(folderId) : await api.records.all();
             if(!recs.length) return toast('暂无数据');
@@ -497,7 +507,7 @@
             toast(`导出成功 (${label})`);
         };
 
-        // 导入（去重）—— 适配新列名
+        // 导入（去重 + 备注支持）
         els.btnImport.onclick = () => els.file.click();
         els.file.onchange = async e => {
             const file = e.target.files[0]; if(!file) return;
@@ -542,7 +552,7 @@
                 for (const rec of data) {
                     const fname = (rec['文件夹'] || '').trim() || '默认';
                     const fid = folderMap[fname];
-                    const name = (rec['姓名'] || rec['对象名称'] || '').trim(); // 兼容新旧列名
+                    const name = (rec['姓名'] || rec['对象名称'] || '').trim();
                     const amount = Math.round((parseFloat(rec['金额']) || 0) * 100) / 100;
                     const date = rec['日期'] || new Date().toISOString().slice(0,10);
                     const note = rec['备注'] || '';
