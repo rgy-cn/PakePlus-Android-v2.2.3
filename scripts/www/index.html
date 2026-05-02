@@ -1,11 +1,1075 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#FDF3D1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="人情簿">
+    <link rel="manifest" href="data:application/json,{}">
+    <title>人情簿 · 人情账本</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js">
+    </script>
+    <style>
+        :root {
+            --cream: #FDF3D1;
+            --cream-dark: #F5E4B7;
+            --cream-darker: #E8D5A0;
+            --burgundy: #722F37;
+            --burgundy-light: #8B3A44;
+            --burgundy-dark: #5A1F26;
+            --ink: #3C2415;
+            --ink-light: #6B4D3A;
+            --ink-faded: #9B7D6A;
+            --paper: #FBF7EC;
+            --paper-white: #FFFEF9;
+            --danger: #A8423A;
+            --shadow-soft: 0 2px 12px rgba(60, 36, 21, 0.08);
+            --shadow-medium: 0 4px 20px rgba(60, 36, 21, 0.13);
+            --shadow-stamp: 0 2px 8px rgba(114, 47, 55, 0.25);
+            --radius-card: 8px;
+            --radius-btn: 22px;
+            --font-kai: 'KaiTi', 'STKaiti', '楷体', 'Noto Serif SC', serif;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        input,
+        textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        html {
+            font-size: 16px;
+            height: 100%;
+            overflow: hidden;
+            background: #3C2415;
+        }
+        body {
+            font-family: var(--font-kai);
+            background: #3C2415;
+            color: var(--ink);
+            height: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+            -webkit-font-smoothing: antialiased;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 10%, rgba(200, 160, 100, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 30%, rgba(180, 140, 80, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 70%, rgba(160, 120, 60, 0.05) 0%, transparent 55%),
+                url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            background-color: var(--paper);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* ========== 头部 ========== */
+        .header {
+            background: linear-gradient(180deg, #FDF3D1 0%, #F8E8C0 100%);
+            padding: 12px 16px 10px;
+            border-bottom: 2px solid var(--cream-darker);
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 1px 6px rgba(60, 36, 21, 0.06);
+            min-height: 52px;
+        }
+        .header-title {
+            font-family: var(--font-kai);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--burgundy-dark);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            text-align: center;
+            flex: 1;
+        }
+        .header-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .btn-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1.5px solid var(--cream-darker);
+            background: var(--paper-white);
+            color: var(--burgundy);
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(60, 36, 21, 0.06);
+            flex-shrink: 0;
+            position: relative;
+        }
+        .btn-icon:active {
+            background: var(--cream-dark);
+            transform: scale(0.94);
+        }
+        .btn-icon .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--burgundy);
+            color: #FDF3D1;
+            font-size: 0.55rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ========== 搜索栏 ========== */
+        .search-bar-wrap {
+            flex-shrink: 0;
+            padding: 8px 14px;
+            background: var(--paper);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .search-input-group {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-input-group .icon-search {
+            position: absolute;
+            left: 10px;
+            color: var(--ink-faded);
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .search-input {
+            width: 100%;
+            padding: 9px 10px 9px 30px;
+            border-radius: 18px;
+            border: 1.5px solid var(--cream-darker);
+            background: var(--paper-white);
+            font-size: 0.85rem;
+            font-family: var(--font-kai);
+            color: var(--ink);
+            outline: none;
+            transition: all 0.25s;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        .search-input:focus {
+            border-color: var(--burgundy-light);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.07);
+        }
+        .search-input::placeholder {
+            color: var(--ink-faded);
+            font-style: italic;
+        }
+
+        /* ========== 主内容区 ========== */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 14px 16px;
+            background: var(--paper);
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+        .main-content::-webkit-scrollbar {
+            width: 3px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--cream-darker);
+            border-radius: 10px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            min-height: 200px;
+        }
+        .empty-state .seal-large {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #C9A96E 0%, #A8894E 50%, #7D6235 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-stamp), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            margin-bottom: 14px;
+        }
+        .seal-large span {
+            font-size: 1.6rem;
+            color: #FDF3D1;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .empty-state p {
+            color: var(--ink-faded);
+            font-family: var(--font-kai);
+            font-size: 0.9rem;
+            letter-spacing: 0.04em;
+            line-height: 1.6;
+        }
+
+        .folder-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .folder-card {
+            background: var(--paper-white);
+            border-radius: var(--radius-card);
+            padding: 16px 10px;
+            border: 1.5px solid rgba(180, 150, 110, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .folder-card:active {
+            transform: scale(0.96);
+            box-shadow: var(--shadow-medium);
+        }
+        .folder-card .folder-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .folder-card .folder-icon.预设 {
+            background: radial-gradient(circle at 35% 30%, #D4A85C 0%, #B8893E 50%, #8B6428 100%);
+            box-shadow: var(--shadow-stamp);
+        }
+        .folder-card .folder-icon.自定义 {
+            background: radial-gradient(circle at 35% 30%, #A8B8C8 0%, #7A8FA0 50%, #556878 100%);
+            box-shadow: var(--shadow-stamp);
+        }
+        .folder-card .folder-name {
+            font-family: var(--font-kai);
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--ink);
+            letter-spacing: 0.03em;
+            word-break: break-all;
+        }
+        .folder-card .folder-summary {
+            font-family: var(--font-kai);
+            font-size: 0.72rem;
+            color: var(--ink-faded);
+            margin-top: 2px;
+        }
+        .folder-card .folder-actions {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .folder-card:hover .folder-actions,
+        .folder-card:active .folder-actions {
+            opacity: 1;
+        }
+        .folder-card .folder-actions button {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--cream-darker);
+            background: var(--paper-white);
+            font-size: 0.6rem;
+            cursor: pointer;
+            color: var(--ink-light);
+        }
+
+        /* ========== 账目卡片 ========== */
+        .record-card {
+            background: var(--paper-white);
+            border-radius: var(--radius-card);
+            margin-bottom: 8px;
+            padding: 12px 14px;
+            border: 1px solid rgba(180, 150, 110, 0.25);
+            position: relative;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .record-card:active {
+            transform: scale(0.985);
+            box-shadow: var(--shadow-medium);
+        }
+        .record-card.selected {
+            border-color: var(--burgundy-light);
+            background: #FFFBF5;
+            box-shadow: 0 0 0 2px rgba(114, 47, 55, 0.1);
+        }
+        .record-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--burgundy);
+            color: #FDF3D1;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .record-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .record-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--ink);
+            font-family: var(--font-kai);
+            letter-spacing: 0.03em;
+        }
+        .record-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 0.68rem;
+            color: var(--ink-faded);
+            flex-wrap: wrap;
+            font-family: var(--font-kai);
+        }
+        .record-amount {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--burgundy);
+            font-family: var(--font-kai);
+            flex-shrink: 0;
+            text-align: right;
+            min-width: 55px;
+        }
+        .record-date-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--cream);
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            color: var(--ink-faded);
+            font-family: var(--font-kai);
+            border: 1px solid var(--cream-darker);
+        }
+
+        .bottom-bar {
+            flex-shrink: 0;
+            background: linear-gradient(0deg, #FDF3D1 0%, #F8E8C0 100%);
+            border-top: 2px solid var(--cream-darker);
+            padding: 10px 16px calc(10px + var(--safe-bottom));
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            box-shadow: 0 -1px 6px rgba(60, 36, 21, 0.05);
+            z-index: 10;
+        }
+        .btn-main {
+            flex: 1;
+            max-width: 260px;
+            padding: 13px 20px;
+            border-radius: 25px;
+            background: var(--burgundy);
+            color: #FDF3D1;
+            border: none;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: var(--font-kai);
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            box-shadow: var(--shadow-stamp);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-secondary {
+            padding: 10px 14px;
+            border-radius: 18px;
+            background: var(--paper-white);
+            border: 1.5px solid var(--cream-darker);
+            color: var(--ink-light);
+            font-size: 0.78rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: var(--font-kai);
+        }
+        .btn-secondary.danger {
+            color: var(--danger);
+            border-color: rgba(168, 66, 58, 0.4);
+        }
+
+        .exit-float-btn {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 300;
+            background: #3C2415;
+            color: #FDF3D1;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-family: var(--font-kai);
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+            border: none;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 15, 8, 0.65);
+            z-index: 100;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.25s;
+        }
+        @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+        .modal-sheet {
+            background: var(--paper);
+            border-radius: 18px 18px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 18px 18px calc(18px + var(--safe-bottom));
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+        @keyframes slideUp{ from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .modal-handle{ width:36px; height:4px; border-radius:2px; background:var(--cream-darker); margin:0 auto 14px; opacity:.6; }
+        .modal-title{ font-family:var(--font-kai); font-size:1.1rem; font-weight:700; color:var(--burgundy-dark); text-align:center; margin-bottom:14px; }
+        .form-group{ margin-bottom:12px; }
+        .form-label{ font-family:var(--font-kai); font-size:.75rem; font-weight:600; color:var(--ink-light); margin-bottom:4px; }
+        .form-input,.form-textarea{ width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--cream-darker); background:var(--paper-white); font-family:var(--font-kai); font-size:.85rem; }
+        .btn{ font-family:var(--font-kai); }
+        .toast{ font-family:var(--font-kai); }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <header class="header" id="headerBar">
+            <span class="header-title" id="headerTitle">人情簿</span>
+            <div class="header-actions" id="headerActions">
+                <button class="btn-icon" id="btnExport">📤</button>
+                <button class="btn-icon" id="btnImport">📥</button>
+                <button class="btn-icon" id="btnBatchDelete" style="display:none;">🗑️<span class="badge" id="batchBadge" style="display:none;">0</span></button>
+            </div>
+        </header>
+
+        <div class="search-bar-wrap" id="searchBarWrap">
+            <div class="search-input-group">
+                <span class="icon-search">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索对象…" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent"></div>
+
+        <div class="bottom-bar" id="bottomBar">
+            <button class="btn-secondary" id="btnCancelSelect" style="display:none;">取消选择</button>
+            <button class="btn-main" id="btnMainAction"><span>📁</span> 新增文件夹</button>
+            <button class="btn-secondary danger" id="btnDeleteSelected" style="display:none;">删除所选</button>
+        </div>
+
+        <button class="exit-float-btn" id="exitFloatBtn">🚪 退出程序</button>
+    </div>
+
+    <div class="modal-overlay" id="folderModal" style="display:none;">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-title" id="folderModalTitle">新增文件夹</div>
+            <form id="folderForm" autocomplete="off">
+                <input type="hidden" id="folderId" value="">
+                <div class="form-group">
+                    <label class="form-label">📁 文件夹名称 *</label>
+                    <input type="text" class="form-input" id="inputFolderName" placeholder="例如：同学聚会" required maxlength="20">
+                </div>
+                <div class="btn-row" style="display:flex; gap:8px; margin-top:16px;">
+                    <button type="button" class="btn btn-cancel" id="btnCancelFolder" style="flex:1; padding:11px; border-radius:20px; background:var(--paper-white); border:1.5px solid var(--cream-darker);">取消</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1; padding:11px; border-radius:20px; background:var(--burgundy); color:#FDF3D1;">保存</button>
+                </div>
+            </form>
+            <div id="folderDeleteArea" style="margin-top:12px;text-align:center;display:none;">
+                <button type="button" class="btn btn-outline-danger" id="btnDeleteFolder" style="width:100%;">🗑 删除此文件夹及其中所有记录</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="recordModal" style="display:none;">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <div class="modal-title" id="recordModalTitle">记一笔</div>
+            <form id="recordForm" autocomplete="off">
+                <input type="hidden" id="recordId" value="">
+                <div class="form-group">
+                    <label class="form-label">👤 对象名称 *</label>
+                    <input type="text" class="form-input" id="inputName" placeholder="例如：张三" required>
+                </div>
+                <div class="form-row" style="display:flex; gap:8px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">💰 金额 *</label>
+                        <input type="number" class="form-input" id="inputAmount" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">📅 日期</label>
+                        <input type="date" class="form-input" id="inputDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">💬 备注</label>
+                    <textarea class="form-textarea" id="inputNote" placeholder="可补充说明…" rows="2"></textarea>
+                </div>
+                <div class="btn-row" style="display:flex; gap:8px; margin-top:16px;">
+                    <button type="button" class="btn btn-cancel" id="btnCancelRecord" style="flex:1;">取消</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitRecord" style="flex:1;">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmOverlay" style="display:none;">
+        <div class="modal-sheet" style="text-align:center;">
+            <div class="modal-handle"></div>
+            <div style="font-size:2.5rem;margin:8px 0;">⚠️</div>
+            <p style="font-family:var(--font-kai);" id="confirmMsg">确定吗？</p>
+            <p style="font-size:0.7rem;color:var(--ink-faded);margin-bottom:14px;" id="confirmSubMsg"></p>
+            <div class="btn-row" style="display:flex; gap:8px;">
+                <button class="btn btn-cancel" id="btnConfirmCancel">取消</button>
+                <button class="btn btn-danger" id="btnConfirmOk">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none;">
+    <div id="toastContainer"></div>
+
+    <script>
+        (function() {
+            const DB_NAME = 'RenQingBu_DB';
+            const DB_VERSION = 2;
+            const FOLDERS_STORE = 'folders';
+            const RECORDS_STORE = 'records';
+            let db;
+            const PRESET_FOLDERS = ['结婚', '乔迁', '满月', '升学', '祝寿', '白事'];
+
+            // 数据库操作
+            function openDB() {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(DB_NAME, DB_VERSION);
+                    req.onupgradeneeded = (e) => {
+                        const dbr = e.target.result;
+                        if (!dbr.objectStoreNames.contains(FOLDERS_STORE)) {
+                            dbr.createObjectStore(FOLDERS_STORE, { keyPath: 'id', autoIncrement: true }).createIndex('name', 'name', { unique: false });
+                        }
+                        if (!dbr.objectStoreNames.contains(RECORDS_STORE)) {
+                            const rs = dbr.createObjectStore(RECORDS_STORE, { keyPath: 'id', autoIncrement: true });
+                            rs.createIndex('folderId', 'folderId', { unique: false });
+                            rs.createIndex('name', 'name', { unique: false });
+                            rs.createIndex('date', 'date', { unique: false });
+                        }
+                    };
+                    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+                    req.onerror = (e) => reject(e.target.error);
+                });
+            }
+
+            function storeTx(name, mode) { return db.transaction(name, mode).objectStore(name); }
+
+            async function getAllFolders() {
+                const list = await new Promise(r => { const req = storeTx(FOLDERS_STORE, 'readonly').getAll(); req.onsuccess = () => r(req.result || []); });
+                list.sort((a,b) => (a.createdAt||'').localeCompare(b.createdAt||''));
+                return list;
+            }
+            function addFolder(name, isPreset=false) {
+                return new Promise(r => { const req = storeTx(FOLDERS_STORE, 'readwrite').add({name, isPreset, createdAt: new Date().toISOString()}); req.onsuccess = () => r(req.result); });
+            }
+            function updateFolder(id, name) {
+                return new Promise(r => { const store = storeTx(FOLDERS_STORE, 'readwrite'); const gr = store.get(id); gr.onsuccess = () => { const f = gr.result; f.name = name; store.put(f).onsuccess = r; }; });
+            }
+            function deleteFolder(id) {
+                return new Promise(r => { const tx = db.transaction([FOLDERS_STORE, RECORDS_STORE], 'readwrite'); tx.objectStore(FOLDERS_STORE).delete(id); const idx = tx.objectStore(RECORDS_STORE).index('folderId'); idx.openCursor(IDBKeyRange.only(id)).onsuccess = (e) => { const c = e.target.result; if(c) { c.delete(); c.continue(); } }; tx.oncomplete = r; });
+            }
+            function getRecordsByFolder(folderId) {
+                return new Promise(r => { const req = storeTx(RECORDS_STORE, 'readonly').index('folderId').getAll(folderId); req.onsuccess = () => { const list = req.result || []; list.sort((a,b) => (b.date||'').localeCompare(a.date||'')); r(list); }; });
+            }
+            function getAllRecords() {
+                return new Promise(r => { const req = storeTx(RECORDS_STORE, 'readonly').getAll(); req.onsuccess = () => { const list = req.result || []; list.sort((a,b) => (b.date||'').localeCompare(a.date||'')); r(list); }; });
+            }
+            function getRecordById(id) {
+                return new Promise(r => { const req = storeTx(RECORDS_STORE, 'readonly').get(id); req.onsuccess = () => r(req.result); });
+            }
+            function addRecord(rec) {
+                return new Promise(r => { const req = storeTx(RECORDS_STORE, 'readwrite').add({...rec, createdAt: new Date().toISOString()}); req.onsuccess = () => r(req.result); });
+            }
+            function updateRecord(id, updates) {
+                return new Promise(r => { const store = storeTx(RECORDS_STORE, 'readwrite'); const gr = store.get(id); gr.onsuccess = () => { const ex = gr.result; Object.assign(ex, updates); store.put(ex).onsuccess = r; }; });
+            }
+            function deleteRecordsByIds(ids) {
+                return new Promise(r => { const store = storeTx(RECORDS_STORE, 'readwrite'); let done=0; ids.forEach(id => store.delete(id).onsuccess = () => { if(++done===ids.length) r(); }); if(ids.length===0) r(); });
+            }
+            async function initPresetFolders() {
+                if((await getAllFolders()).length===0) for(const n of PRESET_FOLDERS) await addFolder(n, true);
+            }
+
+            // 状态变量
+            let currentView = 'folders', currentFolderId = null, currentFolderName = '', allFolders = [], folderRecords = [];
+            let searchQuery = '', selectedIds = new Set(), isBatchMode = false, editingRecordId = null, editingFolderId = null;
+
+            // DOM元素
+            const $headerTitle = document.getElementById('headerTitle');
+            const $searchInput = document.getElementById('searchInput');
+            const $mainContent = document.getElementById('mainContent');
+            const $btnMainAction = document.getElementById('btnMainAction');
+            const $btnCancelSelect = document.getElementById('btnCancelSelect');
+            const $btnDeleteSelected = document.getElementById('btnDeleteSelected');
+            const $btnBatchDelete = document.getElementById('btnBatchDelete');
+            const $batchBadge = document.getElementById('batchBadge');
+            const $btnExport = document.getElementById('btnExport');
+            const $btnImport = document.getElementById('btnImport');
+            const $importFileInput = document.getElementById('importFileInput');
+            const $folderModal = document.getElementById('folderModal');
+            const $folderModalTitle = document.getElementById('folderModalTitle');
+            const $folderId = document.getElementById('folderId');
+            const $inputFolderName = document.getElementById('inputFolderName');
+            const $folderDeleteArea = document.getElementById('folderDeleteArea');
+            const $btnDeleteFolder = document.getElementById('btnDeleteFolder');
+            const $recordModal = document.getElementById('recordModal');
+            const $recordModalTitle = document.getElementById('recordModalTitle');
+            const $recordId = document.getElementById('recordId');
+            const $inputName = document.getElementById('inputName');
+            const $inputAmount = document.getElementById('inputAmount');
+            const $inputDate = document.getElementById('inputDate');
+            const $inputNote = document.getElementById('inputNote');
+            const $confirmOverlay = document.getElementById('confirmOverlay');
+            const $confirmMsg = document.getElementById('confirmMsg');
+            const $confirmSubMsg = document.getElementById('confirmSubMsg');
+            const $btnConfirmCancel = document.getElementById('btnConfirmCancel');
+            const $btnConfirmOk = document.getElementById('btnConfirmOk');
+            const $toastContainer = document.getElementById('toastContainer');
+            const $exitFloatBtn = document.getElementById('exitFloatBtn');
+            let pendingConfirmAction = null;
+
+            function showToast(msg) {
+                const t = document.createElement('div'); t.className='toast'; t.textContent=msg; $toastContainer.appendChild(t); setTimeout(()=>t.remove(),2200);
+            }
+            function escapeHTML(str) { const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
+            // 导航
+            function navigateToFolders() {
+                currentView='folders'; currentFolderId=null; currentFolderName=''; searchQuery=''; $searchInput.value=''; selectedIds.clear(); isBatchMode=false;
+                $headerTitle.textContent='人情簿'; $btnMainAction.innerHTML='<span>📁</span> 新增文件夹'; $btnBatchDelete.style.display='none'; updateBatchUI(); renderFolderList();
+            }
+            function navigateToFolder(fid, fname) {
+                currentView='folder-detail'; currentFolderId=fid; currentFolderName=fname; searchQuery=''; $searchInput.value=''; selectedIds.clear(); isBatchMode=false;
+                $headerTitle.textContent=fname; $btnMainAction.innerHTML='<span>✚</span> 记一笔'; $btnBatchDelete.style.display=''; updateBatchUI(); renderRecordList();
+            }
+
+            // 金额汇总辅助
+            async function getFolderTotalAmount(folderId) {
+                const recs = await getRecordsByFolder(folderId);
+                return recs.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+            }
+
+            // 渲染文件夹列表（包含金额汇总）
+            async function renderFolderList() {
+                allFolders = await getAllFolders();
+                const countMap = {}; const totalMap = {};
+                const allRecs = await getAllRecords();
+                allRecs.forEach(r => {
+                    if(r.folderId !== undefined) {
+                        countMap[r.folderId] = (countMap[r.folderId]||0)+1;
+                        totalMap[r.folderId] = (totalMap[r.folderId]||0) + (Number(r.amount)||0);
+                    }
+                });
+                if(allFolders.length===0) {
+                    $mainContent.innerHTML = `<div class="empty-state"><div class="seal-large"><span>📜</span></div><p>还没有文件夹<br>点击下方按钮创建一个吧</p></div>`;
+                } else {
+                    let html = '<div class="folder-grid">';
+                    allFolders.forEach(f => {
+                        const cnt = countMap[f.id]||0;
+                        const total = Math.floor(totalMap[f.id]||0);
+                        const cls = f.isPreset?'预设':'自定义';
+                        html += `<div class="folder-card" data-folder-id="${f.id}" data-folder-name="${escapeHTML(f.name)}">
+                            <div class="folder-actions">
+                                <button class="btn-edit-folder" data-folder-id="${f.id}" data-folder-name="${escapeHTML(f.name)}">✎</button>
+                                <button class="btn-del-folder" data-folder-id="${f.id}" data-folder-name="${escapeHTML(f.name)}">✕</button>
+                            </div>
+                            <div class="folder-icon ${cls}">${getFolderEmoji(f.name)}</div>
+                            <div class="folder-name">${escapeHTML(f.name)}</div>
+                            <div class="folder-summary">${cnt} 笔记录 共${total}元</div>
+                        </div>`;
+                    });
+                    html += '</div>'; $mainContent.innerHTML = html;
+                    attachFolderEvents();
+                }
+            }
+
+            function getFolderEmoji(name) {
+                return {'结婚':'💒','乔迁':'🏠','满月':'🍼','升学':'🎓','祝寿':'🎂','白事':'🕯️'}[name] || '📂';
+            }
+
+            function attachFolderEvents() {
+                document.querySelectorAll('.folder-card').forEach(card => {
+                    card.addEventListener('click', e => {
+                        if(e.target.closest('.btn-edit-folder,.btn-del-folder')) return;
+                        navigateToFolder(Number(card.dataset.folderId), card.dataset.folderName);
+                    });
+                    let timer;
+                    card.addEventListener('pointerdown', e => {
+                        if(e.target.closest('.btn-edit-folder,.btn-del-folder')) return;
+                        timer = setTimeout(() => openEditFolderModal(Number(card.dataset.folderId), card.dataset.folderName), 600);
+                    });
+                    card.addEventListener('pointerup', ()=>clearTimeout(timer));
+                    card.addEventListener('pointermove', ()=>clearTimeout(timer));
+                });
+                document.querySelectorAll('.btn-edit-folder').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openEditFolderModal(Number(b.dataset.folderId), b.dataset.folderName); }));
+                document.querySelectorAll('.btn-del-folder').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); confirmDeleteFolder(Number(b.dataset.folderId), b.dataset.folderName); }));
+            }
+
+            async function renderRecordList() {
+                folderRecords = await getRecordsByFolder(currentFolderId);
+                let filtered = [...folderRecords];
+                if(searchQuery.trim()) {
+                    const q = searchQuery.trim().toLowerCase();
+                    filtered = filtered.filter(r => r.name && r.name.toLowerCase().includes(q));
+                }
+                if(filtered.length===0) {
+                    $mainContent.innerHTML = `<div class="empty-state"><div class="seal-large"><span>📜</span></div><p>${searchQuery?'没有匹配的账目':'还没有记录'}</p></div>`;
+                } else {
+                    let html = '';
+                    filtered.forEach(rec => {
+                        const sel = selectedIds.has(rec.id)?' selected':'';
+                        const amt = Number(rec.amount||0).toFixed(2);
+                        const dt = rec.date||'';
+                        html += `<div class="record-card${sel}" data-record-id="${rec.id}">
+                            <div class="record-info">
+                                <div class="record-name">${escapeHTML(rec.name||'未命名')}</div>
+                                <div class="record-meta"><span class="record-date-tag">📅 ${dt||'未知日期'}</span></div>
+                            </div>
+                            <div class="record-amount">¥ ${amt}</div>
+                        </div>`;
+                    });
+                    $mainContent.innerHTML = html;
+                    attachRecordEvents();
+                }
+                updateBatchUI();
+            }
+
+            async function renderGlobalSearch() {
+                if(!searchQuery.trim()) { renderFolderList(); return; }
+                const allRecs = await getAllRecords();
+                const q = searchQuery.trim().toLowerCase();
+                const matched = allRecs.filter(r => r.name && r.name.toLowerCase().includes(q));
+                if(matched.length===0) {
+                    $mainContent.innerHTML = `<div class="empty-state"><div class="seal-large"><span>🔍</span></div><p>没有匹配的账目</p></div>`;
+                } else {
+                    const fmap = {}; allFolders.forEach(f=>fmap[f.id]=f.name);
+                    let html = '';
+                    matched.forEach(rec => {
+                        const amt = Number(rec.amount||0).toFixed(2);
+                        const dt = rec.date||'';
+                        html += `<div class="record-card" data-folder-id="${rec.folderId}">
+                            <div class="record-info">
+                                <div class="record-name">${escapeHTML(rec.name)} <span style="font-size:0.65rem;color:var(--ink-faded);">[${escapeHTML(fmap[rec.folderId]||'未知')}]</span></div>
+                                <div class="record-meta"><span class="record-date-tag">📅 ${dt||'未知日期'}</span></div>
+                            </div>
+                            <div class="record-amount">¥ ${amt}</div>
+                        </div>`;
+                    });
+                    $mainContent.innerHTML = html;
+                    document.querySelectorAll('.record-card').forEach(card => {
+                        card.addEventListener('click', () => {
+                            const fid = Number(card.dataset.folderId);
+                            const f = allFolders.find(x=>x.id===fid);
+                            if(f) navigateToFolder(fid, f.name);
+                        });
+                    });
+                }
+            }
+
+            let searchDebounce;
+            $searchInput.addEventListener('input', ()=>{
+                clearTimeout(searchDebounce);
+                searchDebounce = setTimeout(()=>{
+                    searchQuery = $searchInput.value;
+                    if(currentView==='folder-detail') renderRecordList();
+                    else renderGlobalSearch();
+                },250);
+            });
+
+            function attachRecordEvents() {
+                document.querySelectorAll('.record-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const rid = Number(card.dataset.recordId);
+                        if(isBatchMode) toggleSelect(rid); else openEditRecordModal(rid);
+                    });
+                    let timer;
+                    card.addEventListener('pointerdown', () => {
+                        timer = setTimeout(() => {
+                            const rid = Number(card.dataset.recordId);
+                            if(!isBatchMode) { enterBatchMode(); toggleSelect(rid); }
+                        }, 600);
+                    });
+                    card.addEventListener('pointerup', ()=>clearTimeout(timer));
+                    card.addEventListener('pointermove', ()=>clearTimeout(timer));
+                });
+            }
+
+            function enterBatchMode() { isBatchMode=true; selectedIds.clear(); updateBatchUI(); renderRecordList(); }
+            function exitBatchMode() { isBatchMode=false; selectedIds.clear(); updateBatchUI(); renderRecordList(); }
+            function toggleSelect(id) {
+                if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+                if(selectedIds.size===0 && isBatchMode) exitBatchMode(); else { updateBatchUI(); renderRecordList(); }
+            }
+            function updateBatchUI() {
+                const cnt = selectedIds.size;
+                if(currentView==='folder-detail' && isBatchMode && cnt>0) {
+                    $btnCancelSelect.style.display=''; $btnDeleteSelected.style.display=''; $btnMainAction.style.display='none';
+                    $btnBatchDelete.style.display='none'; $batchBadge.style.display=''; $batchBadge.textContent=cnt;
+                } else if(currentView==='folder-detail' && isBatchMode && cnt===0) {
+                    $btnCancelSelect.style.display=''; $btnDeleteSelected.style.display='none'; $btnMainAction.style.display='none';
+                    $btnBatchDelete.style.display='none'; $batchBadge.style.display='none';
+                } else {
+                    $btnCancelSelect.style.display='none'; $btnDeleteSelected.style.display='none'; $btnMainAction.style.display='';
+                    $btnBatchDelete.style.display = (currentView==='folder-detail')?'':'none'; $batchBadge.style.display='none';
+                }
+            }
+
+            $btnCancelSelect.addEventListener('click', exitBatchMode);
+            $btnBatchDelete.addEventListener('click', ()=>{ if(folderRecords.length===0) showToast('没有可删除的记录'); else if(!isBatchMode) { enterBatchMode(); showToast('请点击选择要删除的账目'); } });
+            $btnDeleteSelected.addEventListener('click', ()=>{
+                if(selectedIds.size===0) return;
+                showConfirm(`确定要删除所选 ${selectedIds.size} 条账目吗？`, '', async ()=>{
+                    await deleteRecordsByIds(Array.from(selectedIds));
+                    showToast(`已删除 ${selectedIds.size} 条记录`);
+                    exitBatchMode(); renderRecordList();
+                });
+            });
+
+            function showConfirm(msg, sub, cb) {
+                $confirmMsg.textContent=msg; $confirmSubMsg.textContent=sub||'此操作不可恢复'; $confirmOverlay.style.display='flex'; pendingConfirmAction=cb;
+            }
+            $btnConfirmCancel.addEventListener('click', ()=>{ $confirmOverlay.style.display='none'; pendingConfirmAction=null; });
+            $btnConfirmOk.addEventListener('click', async ()=>{ $confirmOverlay.style.display='none'; if(pendingConfirmAction) { await pendingConfirmAction(); pendingConfirmAction=null; } });
+            $confirmOverlay.addEventListener('click', e=>{ if(e.target===$confirmOverlay) { $confirmOverlay.style.display='none'; pendingConfirmAction=null; } });
+
+            function openAddFolderModal() {
+                editingFolderId=null; $folderId.value=''; $folderModalTitle.textContent='新增文件夹'; $inputFolderName.value=''; $folderDeleteArea.style.display='none'; $folderModal.style.display='flex'; setTimeout(()=>$inputFolderName.focus(),350);
+            }
+            function openEditFolderModal(id, name) {
+                editingFolderId=id; $folderId.value=id; $folderModalTitle.textContent='编辑文件夹'; $inputFolderName.value=name; $folderDeleteArea.style.display=''; $folderModal.style.display='flex';
+            }
+            function closeFolderModal() { $folderModal.style.display='none'; editingFolderId=null; }
+            document.getElementById('btnCancelFolder').addEventListener('click', closeFolderModal);
+            $folderModal.addEventListener('click', e=>{ if(e.target===$folderModal) closeFolderModal(); });
+            document.getElementById('folderForm').addEventListener('submit', async e => {
+                e.preventDefault(); const name = $inputFolderName.value.trim();
+                if(!name) { showToast('请输入文件夹名称'); return; }
+                if(editingFolderId) await updateFolder(editingFolderId, name); else await addFolder(name, false);
+                showToast(editingFolderId?'文件夹已更新':'文件夹已创建'); closeFolderModal(); renderFolderList();
+            });
+            $btnDeleteFolder.addEventListener('click', ()=>{
+                if(!editingFolderId) return;
+                showConfirm(`确定要删除文件夹「${$inputFolderName.value.trim()}」吗？`, '文件夹内所有记录将一并删除', async ()=>{
+                    await deleteFolder(editingFolderId); closeFolderModal();
+                    if(currentFolderId===editingFolderId) navigateToFolders(); else renderFolderList();
+                });
+            });
+            function confirmDeleteFolder(fid, fname) {
+                showConfirm(`确定要删除文件夹「${fname}」吗？`, '文件夹内所有记录将一并删除', async ()=>{
+                    await deleteFolder(fid);
+                    if(currentFolderId===fid) navigateToFolders(); else renderFolderList();
+                });
+            }
+
+            function openAddRecordModal() {
+                editingRecordId=null; $recordId.value=''; $recordModalTitle.textContent='记一笔'; $inputName.value=''; $inputAmount.value=''; $inputDate.value=new Date().toISOString().slice(0,10); $inputNote.value=''; $recordModal.style.display='flex'; setTimeout(()=>$inputName.focus(),350);
+            }
+            function openEditRecordModal(id) {
+                getRecordById(id).then(rec => {
+                    if(!rec) { showToast('记录不存在'); return; }
+                    editingRecordId=id; $recordId.value=id; $recordModalTitle.textContent='编辑账目'; $inputName.value=rec.name||''; $inputAmount.value=rec.amount||''; $inputDate.value=rec.date||new Date().toISOString().slice(0,10); $inputNote.value=rec.note||''; $recordModal.style.display='flex';
+                });
+            }
+            function closeRecordModal() { $recordModal.style.display='none'; editingRecordId=null; }
+            document.getElementById('btnCancelRecord').addEventListener('click', closeRecordModal);
+            $recordModal.addEventListener('click', e=>{ if(e.target===$recordModal) closeRecordModal(); });
+            document.getElementById('recordForm').addEventListener('submit', async e => {
+                e.preventDefault(); const name=$inputName.value.trim(), amtStr=$inputAmount.value.trim();
+                if(!name) { showToast('请输入对象名称'); return; }
+                if(!amtStr||isNaN(parseFloat(amtStr))) { showToast('请输入有效金额'); return; }
+                const data = { folderId:currentFolderId, name, amount:parseFloat(parseFloat(amtStr).toFixed(2)), date:$inputDate.value||new Date().toISOString().slice(0,10), note:$inputNote.value.trim() };
+                if(editingRecordId) await updateRecord(editingRecordId, data); else await addRecord(data);
+                showToast(editingRecordId?'账目已更新':'账目已记录'); closeRecordModal(); renderRecordList();
+            });
+
+            $btnMainAction.addEventListener('click', ()=>{ if(currentView==='folders') openAddFolderModal(); else { if(isBatchMode) exitBatchMode(); openAddRecordModal(); } });
+
+            // ========== 滑动返回（文件夹内） ==========
+            let slideStartX=0, slideStartY=0, sliding=false;
+            $mainContent.addEventListener('touchstart', e => {
+                if(currentView!=='folder-detail') return;
+                const t = e.touches[0]; slideStartX=t.clientX; slideStartY=t.clientY; sliding=true;
+            }, {passive:true});
+            $mainContent.addEventListener('touchmove', e => {
+                if(!sliding || currentView!=='folder-detail') return;
+                const t = e.touches[0]; const dx = t.clientX-slideStartX, dy = t.clientY-slideStartY;
+                if(Math.abs(dx)>Math.abs(dy)*1.5 && Math.abs(dx)>60) {
+                    if((slideStartX<40 && dx>60) || (slideStartX>window.innerWidth-40 && dx<-60)) {
+                        e.preventDefault(); sliding=false; navigateToFolders(); renderFolderList();
+                    }
+                }
+            }, {passive:false});
+            $mainContent.addEventListener('touchend', ()=>sliding=false);
+
+            // ========== 主页滑动弹出退出按钮 ==========
+            let exitStartX=0, exitStartY=0, exitSwiping=false;
+            document.addEventListener('touchstart', e => {
+                if(currentView!=='folders') return;
+                const t = e.touches[0]; exitStartX=t.clientX; exitStartY=t.clientY; exitSwiping=true;
+            }, {passive:true});
+            document.addEventListener('touchmove', e => {
+                if(!exitSwiping || currentView!=='folders') return;
+                const t = e.touches[0]; const dx = t.clientX-exitStartX, dy = t.clientY-exitStartY;
+                if(Math.abs(dx)>Math.abs(dy)*1.5 && Math.abs(dx)>60) {
+                    if((exitStartX<40 && dx>60) || (exitStartX>window.innerWidth-40 && dx<-60)) {
+                        e.preventDefault(); exitSwiping=false;
+                        $exitFloatBtn.style.display='flex';
+                        setTimeout(()=>{ if($exitFloatBtn.style.display==='flex') $exitFloatBtn.style.display='none'; },4000);
+                    }
+                }
+            }, {passive:false});
+            document.addEventListener('touchend', ()=>exitSwiping=false);
+            $exitFloatBtn.addEventListener('click', ()=>{
+                $exitFloatBtn.style.display='none';
+                if(window.Android?.exit) window.Android.exit();
+                else if(navigator.app?.exitApp) navigator.app.exitApp();
+                else { window.close(); setTimeout(()=>{ window.location.href='about:blank'; },100); }
+            });
+
+            // 导出导入（不含备注、创建时间等）
+            function downloadFile(blob, filename) {
+                const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); setTimeout(()=>{ a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); },0);
+            }
+            $btnExport.addEventListener('click', async ()=>{
+                let recs, label;
+                if(currentView==='folder-detail') { recs=await getRecordsByFolder(currentFolderId); label=currentFolderName; }
+                else { recs=await getAllRecords(); label='全部'; }
+                if(!recs.length) { showToast('暂无数据可导出'); return; }
+                const fmap={}; allFolders.forEach(f=>fmap[f.id]=f.name);
+                const data = recs.map(r=>({ '文件夹':fmap[r.folderId]||'', '对象名称':r.name||'', '金额':r.amount||0, '日期':r.date||'' }));
+                const ws = XLSX.utils.json_to_sheet(data); ws['!cols']=[{wch:12},{wch:15},{wch:12},{wch:14}];
+                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '人情账目');
+                const fname = `人情账目_${label}_${new Date().toISOString().slice(0,10)}.xlsx`;
+                downloadFile(new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), fname);
+                showToast(`导出成功（${label}，${recs.length}条）`);
+            });
+            $btnImport.addEventListener('click', ()=>$importFileInput.click());
+            $importFileInput.addEventListener('change', async e => {
+                const file=e.target.files[0]; if(!file) return;
+                try {
+                    const data = await new Promise(r => { const reader=new FileReader(); reader.onload=ev=>{ const wb=XLSX.read(ev.target.result,{type:'array'}); r(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''})); }; reader.readAsArrayBuffer(file); });
+                    if(!data.length) { showToast('文件中没有有效数据'); return; }
+                    showConfirm(`即将导入 ${data.length} 条记录`, '按“文件夹”列归类，无则归入“默认”', async ()=>{
+                        const existFolders=await getAllFolders(); const fnameMap={}; existFolders.forEach(f=>fnameMap[f.name]=f.id);
+                        for(const rec of data) {
+                            let fn=(rec['文件夹']||'').trim()||'默认'; let fid=fnameMap[fn]; if(!fid) { fid=await addFolder(fn,false); fnameMap[fn]=fid; }
+                            await addRecord({ folderId:fid, name:rec['对象名称']||'', amount:parseFloat(rec['金额'])||0, date:rec['日期']||new Date().toISOString().slice(0,10), note:'' });
+                        }
+                        showToast(`成功导入 ${data.length} 条记录`); if(currentView==='folders') renderFolderList(); else renderRecordList();
+                    });
+                } catch(ex) { showToast('文件读取失败'); }
+                $importFileInput.value='';
+            });
+
+            document.addEventListener('keydown', e => {
+                if(e.key==='Escape') {
+                    if($folderModal.style.display==='flex') closeFolderModal();
+                    if($recordModal.style.display==='flex') closeRecordModal();
+                    if($confirmOverlay.style.display==='flex') { $confirmOverlay.style.display='none'; pendingConfirmAction=null; }
+                    if(isBatchMode) exitBatchMode();
+                    if(currentView==='folder-detail') { navigateToFolders(); renderFolderList(); }
+                }
+            });
+
+            openDB().then(async ()=>{ await initPresetFolders(); console.log('📜 人情簿已就绪'); navigateToFolders(); renderFolderList(); });
+        })();
+    </script>
+</body>
 </html>
