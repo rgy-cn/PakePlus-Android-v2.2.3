@@ -17,16 +17,19 @@
             -webkit-user-select: none;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: '楷体', KaiTi, 'STKaiti', '华文楷体', serif;
             background-color: #f5f5f5;
             height: 100vh;
             overflow: hidden;
             position: relative;
             overscroll-behavior: none;
         }
+        /* 确保所有表单元素继承楷体 */
+        input, button, textarea, select {
+            font-family: inherit;
+        }
         .splash-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #ffbb00 0%, #ff9900 100%);
             display: flex; justify-content: center; align-items: center;
             z-index: 9999; opacity: 1; transition: opacity 0.5s ease-out;
@@ -75,7 +78,7 @@
             display: flex; align-items: center; justify-content: center;
             z-index: 100; transition: all 0.2s ease; line-height: 1;
         }
-        .add-folder-btn:active, .add-record-btn:active { transform: scale(0.93); box-shadow: 0 2px 10px rgba(255,187,0,0.3); }
+        .add-folder-btn:active, .add-record-btn:active { transform: scale(0.93); }
         .record-list { margin-top: 16px; padding-bottom: 90px; }
         .search-box {
             width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
@@ -87,11 +90,13 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: all 0.2s ease;
         }
         .record-item:active { transform: scale(0.98); background: #fafafa; }
-        .record-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .record-name { font-weight: bold; font-size: 1.1rem; }
-        .record-amount { color: #e74c3c; font-weight: bold; font-size: 1.1rem; }
-        .record-date { color: #666; font-size: 0.9rem; margin-bottom: 6px; }
-        .record-note { color: #888; font-size: 0.85rem; padding: 6px 0 0 0; border-top: 1px solid #eee; margin-top: 4px; word-break: break-all; }
+        .record-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .record-left { flex: 1; margin-right: 12px; }
+        .record-name { font-weight: bold; font-size: 1.1rem; word-break: break-all; }
+        .record-note { font-weight: bold; font-size: 0.9rem; color: #555; margin-top: 4px; word-break: break-all; }
+        .record-right { text-align: right; flex-shrink: 0; }
+        .record-amount-value { color: #e74c3c; font-weight: bold; font-size: 1.1rem; }
+        .record-date { color: #666; font-size: 0.9rem; margin-top: 2px; }
         .about-page {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #ffbb00 0%, #ff9900 100%);
@@ -149,17 +154,17 @@
         .context-item { padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 1rem; }
         .context-item:last-child { border-bottom: none; color: #e74c3c; }
         .context-item:active { background: #eef0f2; }
-        .exit-confirm-overlay {
+        .custom-confirm-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); z-index: 3500; display: none;
             justify-content: center; align-items: center;
         }
-        .exit-confirm-box {
+        .custom-confirm-box {
             background: white; border-radius: 12px; padding: 24px;
             width: 80%; max-width: 320px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .exit-confirm-box h3 { margin-bottom: 20px; }
+        .custom-confirm-box .msg { margin: 15px 0 20px; font-size: 1rem; color: #333; }
         .import-file-area {
             display: flex; flex-direction: column; align-items: center;
             border: 2px dashed #ddd; border-radius: 12px; padding: 20px 10px;
@@ -180,7 +185,6 @@
     </div>
 
     <div class="app-container" id="appContainer">
-        <!-- 顶部导航栏（不再包含返回按钮） -->
         <div class="top-nav">
             <button class="nav-btn" onclick="showImportExport()">💾</button>
             <div class="nav-center">人情簿</div>
@@ -255,12 +259,12 @@
             </div>
             <div class="form-group">
                 <label class="form-label">📥 导入数据</label>
-                <input type="file" class="form-input" id="importFileInput" style="display:none;" onchange="handleFileSelected(this)">
-                <div class="import-file-area" onclick="triggerFileSelect()" id="importArea">
+                <input type="file" class="form-input" id="importFileInput" style="position:absolute;opacity:0;width:0;height:0;" onchange="handleFileSelected(this)">
+                <label for="importFileInput" class="import-file-area" id="importArea">
                     <span class="file-icon">📂</span>
                     <span class="file-text" id="importFileLabel">点击此处选择Excel文件</span>
                     <span class="file-name" id="importFileName"></span>
-                </div>
+                </label>
                 <button class="btn btn-primary" onclick="triggerImport()" style="width:100%;">开始导入</button>
             </div>
             <div class="form-actions">
@@ -274,12 +278,14 @@
         <div class="context-item" onclick="deleteItem()">🗑️ 删除</div>
     </div>
 
-    <div class="exit-confirm-overlay" id="exitConfirmOverlay">
-        <div class="exit-confirm-box">
-            <h3>确定要退出应用吗？</h3>
+    <!-- 自定义确认／提示弹窗 -->
+    <div class="custom-confirm-overlay" id="customConfirmOverlay">
+        <div class="custom-confirm-box">
+            <strong id="customConfirmTitle" style="font-size:1.1rem;">提示</strong>
+            <div class="msg" id="customConfirmMsg"></div>
             <div class="form-actions">
-                <button class="btn btn-secondary" onclick="hideExitConfirm()">取消</button>
-                <button class="btn btn-danger" onclick="tryExitApp()">退出</button>
+                <button class="btn btn-secondary" id="customConfirmCancel">取消</button>
+                <button class="btn btn-primary" id="customConfirmOk">确定</button>
             </div>
         </div>
     </div>
@@ -302,21 +308,53 @@
             let contextTarget = null;
             let isEditing = false;
 
-            // 长按相关
             let longPressTimer = null;
             let pressStartX = 0, pressStartY = 0;
             let hasMoved = false;
             let longPressTriggered = false;
             const MOVE_THRESHOLD = 15;
 
-            // 侧滑相关
             let swipeStartX = 0, swipeStartY = 0;
             let swipeHandled = false;
             const SWIPE_THRESHOLD = 60;
 
+            function customAlert(msg, callback) {
+                const overlay = document.getElementById('customConfirmOverlay');
+                document.getElementById('customConfirmTitle').textContent = '提示';
+                document.getElementById('customConfirmMsg').textContent = msg;
+                document.getElementById('customConfirmCancel').style.display = 'none';
+                const okBtn = document.getElementById('customConfirmOk');
+                okBtn.textContent = '确定';
+                overlay.style.display = 'flex';
+                okBtn.onclick = function() {
+                    overlay.style.display = 'none';
+                    if (callback) callback();
+                };
+            }
+
+            function customConfirm(msg, callback) {
+                const overlay = document.getElementById('customConfirmOverlay');
+                document.getElementById('customConfirmTitle').textContent = '确认';
+                document.getElementById('customConfirmMsg').textContent = msg;
+                document.getElementById('customConfirmCancel').style.display = 'block';
+                const okBtn = document.getElementById('customConfirmOk');
+                okBtn.textContent = '确定';
+                overlay.style.display = 'flex';
+                
+                const cancelBtn = document.getElementById('customConfirmCancel');
+                cancelBtn.onclick = function() {
+                    overlay.style.display = 'none';
+                    if (callback) callback(false);
+                };
+                okBtn.onclick = function() {
+                    overlay.style.display = 'none';
+                    if (callback) callback(true);
+                };
+            }
+
             function saveData() {
                 try { localStorage.setItem('humanityRecords', JSON.stringify(appData)); }
-                catch(e) { alert('存储空间不足，请导出数据后清理。'); }
+                catch(e) { customAlert('存储空间不足，请导出数据后清理。'); }
             }
             function escapeHTML(str) {
                 const div = document.createElement('div');
@@ -327,8 +365,6 @@
                 const icons = { '结婚':'💍', '乔迁':'🏠', '满月':'👶', '祝寿':'🎂', '升学':'🎓', '白事':'🕯️' };
                 return icons[name] || '📁';
             }
-
-            // 导航栏标题更新（不再需要返回按钮）
             function updateNavBar(title) {
                 document.querySelector('.nav-center').textContent = title || '人情簿';
             }
@@ -344,6 +380,7 @@
                 if(addRecordBtn) addRecordBtn.remove();
 
                 const grid = document.getElementById('folderGrid');
+                if(!grid) return;
                 grid.innerHTML = '';
                 appData.folders.forEach(f => {
                     const count = f.records.length;
@@ -407,11 +444,15 @@
                     div.setAttribute('data-record-index', realIndex);
                     div.innerHTML = `
                         <div class="record-header">
-                            <div class="record-name">${escapeHTML(record.name)}</div>
-                            <div class="record-amount">¥${parseFloat(record.amount).toFixed(2)}</div>
+                            <div class="record-left">
+                                <div class="record-name">${escapeHTML(record.name)}</div>
+                                ${record.note ? `<div class="record-note">${escapeHTML(record.note)}</div>` : ''}
+                            </div>
+                            <div class="record-right">
+                                <div class="record-amount-value">¥${parseFloat(record.amount).toFixed(2)}</div>
+                                <div class="record-date">${escapeHTML(record.date)}</div>
+                            </div>
                         </div>
-                        <div class="record-date">${escapeHTML(record.date)}</div>
-                        ${record.note ? `<div class="record-note">${escapeHTML(record.note)}</div>` : ''}
                     `;
                     list.appendChild(div);
                 });
@@ -542,21 +583,23 @@
             window.deleteItem = function() {
                 if(!contextTarget) return;
                 hideContextMenu();
-                if(!confirm('确定要删除吗？此操作不可恢复。')) return;
-                const { type, item, index } = contextTarget;
-                if(type === 'folder') {
-                    appData.folders = appData.folders.filter(f => f.id !== item.id);
-                    saveData();
-                    renderMainView();
-                } else if(type === 'record') {
-                    const folder = appData.folders.find(f => f.id === currentFolderId);
-                    if(folder && index >= 0 && index < folder.records.length) {
-                        folder.records.splice(index, 1);
+                customConfirm('确定要删除吗？此操作不可恢复。', function(confirmed) {
+                    if(!confirmed) return;
+                    const { type, item, index } = contextTarget;
+                    if(type === 'folder') {
+                        appData.folders = appData.folders.filter(f => f.id !== item.id);
                         saveData();
-                        renderRecords(document.getElementById('searchBox')?.value || '');
+                        renderMainView();
+                    } else if(type === 'record') {
+                        const folder = appData.folders.find(f => f.id === currentFolderId);
+                        if(folder && index >= 0 && index < folder.records.length) {
+                            folder.records.splice(index, 1);
+                            saveData();
+                            renderRecords(document.getElementById('searchBox')?.value || '');
+                        }
                     }
-                }
-                contextTarget = null;
+                    contextTarget = null;
+                });
             };
 
             window.showAddFolderModal = function() {
@@ -580,7 +623,7 @@
             };
             window.saveFolder = function() {
                 const name = document.getElementById('folderNameInput').value.trim();
-                if(!name) { alert('请输入文件夹名称'); return; }
+                if(!name) { customAlert('请输入文件夹名称'); return; }
                 if(isEditing && contextTarget && contextTarget.item) {
                     const folder = appData.folders.find(f => f.id === contextTarget.item.id);
                     if(folder) folder.name = name;
@@ -622,9 +665,9 @@
                 const amount = document.getElementById('recordAmountInput').value.trim();
                 const date = document.getElementById('recordDateInput').value;
                 const note = document.getElementById('recordNoteInput').value.trim();
-                if(!name) { alert('请输入姓名'); return; }
-                if(!amount || isNaN(parseFloat(amount))) { alert('请输入有效金额'); return; }
-                if(!date) { alert('请选择日期'); return; }
+                if(!name) { customAlert('请输入姓名'); return; }
+                if(!amount || isNaN(parseFloat(amount))) { customAlert('请输入有效金额'); return; }
+                if(!date) { customAlert('请选择日期'); return; }
                 const folder = appData.folders.find(f => f.id === currentFolderId);
                 if(!folder) return;
                 if(isEditing && contextTarget && contextTarget.index !== null) {
@@ -637,8 +680,10 @@
                 renderRecords(document.getElementById('searchBox')?.value || '');
             };
 
-            // 返回主界面（供侧滑调用）
+            let goBackLock = false;
             window.goBack = function() {
+                if(goBackLock) return;
+                goBackLock = true;
                 hideContextMenu();
                 if(currentView === 'folder') {
                     currentFolderId = null;
@@ -648,6 +693,7 @@
                 } else if(currentView === 'about') {
                     hideAbout();
                 }
+                setTimeout(() => { goBackLock = false; }, 300);
             };
 
             window.showAbout = function() {
@@ -665,7 +711,6 @@
                 else renderMainView();
             };
 
-            // ---------- 导入导出 ----------
             window.showImportExport = function() {
                 hideContextMenu();
                 document.getElementById('importExportModal').style.display = 'flex';
@@ -675,9 +720,6 @@
             };
             window.hideImportExportModal = function() {
                 document.getElementById('importExportModal').style.display = 'none';
-            };
-            window.triggerFileSelect = function() {
-                document.getElementById('importFileInput').click();
             };
             window.handleFileSelected = function(input) {
                 const file = input.files[0];
@@ -693,60 +735,61 @@
                 const fileInput = document.getElementById('importFileInput');
                 const file = fileInput.files[0];
                 if (!file) {
-                    alert('请先选择要导入的Excel文件');
-                    triggerFileSelect();
+                    customAlert('请先选择要导入的Excel文件');
                     return;
                 }
                 const fileName = file.name.toLowerCase();
                 if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
-                    alert('请选择扩展名为 .xlsx 或 .xls 的Excel文件');
+                    customAlert('请选择扩展名为 .xlsx 或 .xls 的Excel文件');
                     return;
                 }
-                if (!confirm('导入将合并数据，跳过重复记录，确定吗？')) return;
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-                        const sheet = wb.Sheets[wb.SheetNames[0]];
-                        const rows = XLSX.utils.sheet_to_json(sheet);
-                        let count = 0;
-                        rows.forEach(row => {
-                            const folderName = row['文件夹名'] || '默认';
-                            const name = row['姓名'];
-                            if (!name) return;
-                            let folder = appData.folders.find(f => f.name === folderName);
-                            if (!folder) {
-                                folder = { id: 'imp_' + Date.now() + Math.random().toString(36).substr(2,6), name: folderName, records: [] };
-                                appData.folders.push(folder);
-                            }
-                            const exists = folder.records.some(r =>
-                                r.name === name && r.date === row['日期'] &&
-                                Math.abs(parseFloat(r.amount) - parseFloat(row['金额'])) < 0.01
-                            );
-                            if (!exists) {
-                                folder.records.push({
-                                    name,
-                                    amount: parseFloat(row['金额']) || 0,
-                                    date: row['日期'] || '',
-                                    note: row['备注'] || ''
-                                });
-                                count++;
-                            }
-                        });
-                        saveData();
-                        alert('导入完成，新增 ' + count + ' 条记录。');
-                        if (currentView === 'main') renderMainView();
-                        else if (currentFolderId) showFolder(currentFolderId);
-                        hideImportExportModal();
-                        fileInput.value = '';
-                        document.getElementById('importFileName').textContent = '';
-                        document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
-                    } catch (err) {
-                        alert('解析失败：' + err.message + '\n请确认文件为有效的Excel表格。');
-                    }
-                };
-                reader.readAsArrayBuffer(file);
+                customConfirm('导入将合并数据，跳过重复记录，确定吗？', function(confirmed) {
+                    if(!confirmed) return;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                            const sheet = wb.Sheets[wb.SheetNames[0]];
+                            const rows = XLSX.utils.sheet_to_json(sheet);
+                            let count = 0;
+                            rows.forEach(row => {
+                                const folderName = row['文件夹名'] || '默认';
+                                const name = row['姓名'];
+                                if (!name) return;
+                                let folder = appData.folders.find(f => f.name === folderName);
+                                if (!folder) {
+                                    folder = { id: 'imp_' + Date.now() + Math.random().toString(36).substr(2,6), name: folderName, records: [] };
+                                    appData.folders.push(folder);
+                                }
+                                const exists = folder.records.some(r =>
+                                    r.name === name && r.date === row['日期'] &&
+                                    Math.abs(parseFloat(r.amount) - parseFloat(row['金额'])) < 0.01
+                                );
+                                if (!exists) {
+                                    folder.records.push({
+                                        name,
+                                        amount: parseFloat(row['金额']) || 0,
+                                        date: row['日期'] || '',
+                                        note: row['备注'] || ''
+                                    });
+                                    count++;
+                                }
+                            });
+                            saveData();
+                            customAlert('导入完成，新增 ' + count + ' 条记录。', function() {
+                                if (currentView === 'main') renderMainView();
+                                else if (currentFolderId) showFolder(currentFolderId);
+                            });
+                            hideImportExportModal();
+                            fileInput.value = '';
+                            document.getElementById('importFileName').textContent = '';
+                            document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
+                        } catch (err) {
+                            customAlert('解析失败：' + err.message + '\n请确认文件为有效的Excel表格。');
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
             };
 
             window.exportData = function() {
@@ -756,16 +799,18 @@
                         '文件夹名': f.name, '姓名': r.name, '金额': r.amount, '日期': r.date, '备注': r.note || ''
                     }));
                 });
-                if (!data.length) { alert('没有数据可导出'); return; }
+                if (!data.length) {
+                    customAlert('没有数据可导出');
+                    return;
+                }
                 const ws = XLSX.utils.json_to_sheet(data);
                 ws['!cols'] = [{wch:10},{wch:12},{wch:10},{wch:12},{wch:20}];
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, '人情记录');
                 XLSX.writeFile(wb, '人情记账簿数据_' + new Date().toISOString().slice(0,10) + '.xlsx');
-                alert('导出成功！');
+                customAlert('导出成功！');
             };
 
-            // ---------- 侧滑逻辑（区分主界面与子页面） ----------
             document.addEventListener('touchstart', function(e) {
                 swipeStartX = e.touches[0].clientX;
                 swipeStartY = e.touches[0].clientY;
@@ -776,40 +821,30 @@
                 if (swipeHandled) return;
                 const dx = e.changedTouches[0].clientX - swipeStartX;
                 const dy = e.changedTouches[0].clientY - swipeStartY;
-                // 检测有效的水平滑动
                 if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < Math.abs(dx) * 0.6) {
-                    // 左侧边缘向右滑 或 右侧边缘向左滑
                     if ((swipeStartX < 30 && dx > 0) || (swipeStartX > window.innerWidth - 30 && dx < 0)) {
                         swipeHandled = true;
                         if (currentView === 'main') {
-                            showExitConfirm();      // 主界面：退出确认
+                            customConfirm('确定要退出应用吗？', function(ok) {
+                                if(ok) {
+                                    window.close();
+                                    setTimeout(() => {
+                                        customAlert('请手动关闭浏览器标签页以退出程序。');
+                                    }, 100);
+                                }
+                            });
                         } else {
-                            goBack();               // 子页面：返回上一级
+                            goBack();
                         }
                     }
                 }
             });
 
-            function showExitConfirm() {
-                document.getElementById('exitConfirmOverlay').style.display = 'flex';
-            }
-            window.hideExitConfirm = function() {
-                document.getElementById('exitConfirmOverlay').style.display = 'none';
-            };
-            window.tryExitApp = function() {
-                window.close();
-                setTimeout(() => {
-                    alert('请手动关闭浏览器标签页以退出程序。');
-                }, 100);
-            };
-
-            // 模态框背景点击关闭
             document.getElementById('folderModal').addEventListener('click', function(e) { if(e.target===this) hideFolderModal(); });
             document.getElementById('recordModal').addEventListener('click', function(e) { if(e.target===this) hideRecordModal(); });
             document.getElementById('importExportModal').addEventListener('click', function(e) { if(e.target===this) hideImportExportModal(); });
-            document.getElementById('exitConfirmOverlay').addEventListener('click', function(e) { if(e.target===this) hideExitConfirm(); });
+            document.getElementById('customConfirmOverlay').addEventListener('click', function(e) { if(e.target===this) this.style.display = 'none'; });
 
-            // 阻止浏览器后退
             let popLock = false;
             window.addEventListener('popstate', function(e) {
                 if(popLock) return;
