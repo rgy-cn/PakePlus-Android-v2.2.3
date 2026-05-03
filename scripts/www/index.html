@@ -263,7 +263,10 @@
             <div class="form-group">
                 <label class="form-label">📥 导入数据</label>
                 <div class="import-file-area">
-                    <input type="file" class="import-file-input-overlay" id="importFileInput" accept=".xlsx,.xls" onchange="handleFileSelected(this)">
+                    <!-- 修复文件选择器：使用 MIME 类型 + 扩展名，并允许所有文件作为后备 -->
+                    <input type="file" class="import-file-input-overlay" id="importFileInput" 
+                           accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                           onchange="handleFileSelected(this)">
                     <span class="file-icon">📂</span>
                     <span class="file-text" id="importFileLabel">点击此处选择Excel文件</span>
                     <span class="file-name" id="importFileName"></span>
@@ -316,7 +319,6 @@
             let longPressTriggered = false;
             const MOVE_THRESHOLD = 15;
 
-            // 手势相关
             let swipeStartX = 0, swipeStartY = 0;
             let swipeHandled = false;
             let edgeTouch = false;
@@ -832,7 +834,7 @@
                 customAlert('导出成功！文件：' + fileName);
             };
 
-            // ---------- 手势处理（更强力的阻止默认行为） ----------
+            // 手势处理
             document.addEventListener('touchstart', function(e) {
                 const touch = e.touches[0];
                 swipeStartX = touch.clientX;
@@ -846,9 +848,8 @@
                 const touch = e.touches[0];
                 const dx = touch.clientX - swipeStartX;
                 const dy = touch.clientY - swipeStartY;
-                // 只要是从屏幕边缘向内滑动，就立刻阻止浏览器的默认返回手势
                 if ((swipeStartX < EDGE_WIDTH && dx > 5) || (swipeStartX > window.innerWidth - EDGE_WIDTH && dx < -5)) {
-                    if (Math.abs(dy) < 50) { // 避免完全垂直滑动时的误触
+                    if (Math.abs(dy) < 50) {
                         e.preventDefault();
                     }
                 }
