@@ -185,9 +185,9 @@
 
     <div class="app-container" id="appContainer">
         <div class="top-nav">
-            <button class="nav-btn" onclick="showImportExport()">💾</button>
+            <button class="nav-btn" id="importBtn" onclick="showImportExport()">💾</button>
             <div class="nav-center">人情簿</div>
-            <button class="nav-btn" onclick="showAbout()">ℹ️</button>
+            <button class="nav-btn" id="aboutBtn" onclick="showAbout()">ℹ️</button>
         </div>
         <div class="main-content" id="mainContent">
             <div class="folder-grid" id="folderGrid"></div>
@@ -258,7 +258,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">📥 导入数据</label>
-                <input type="file" class="form-input" id="importFileInput" style="position:fixed;top:-100px;left:-100px;opacity:0;pointer-events:none;" onchange="handleFileSelected(this)">
+                <input type="file" class="form-input" id="importFileInput" style="position:absolute;opacity:0;width:0;height:0;overflow:hidden;" onchange="handleFileSelected(this)">
                 <div class="import-file-area" onclick="triggerFileSelect()" id="importArea">
                     <span class="file-icon">📂</span>
                     <span class="file-text" id="importFileLabel">点击此处选择Excel文件</span>
@@ -312,10 +312,9 @@
             let longPressTriggered = false;
             const MOVE_THRESHOLD = 15;
 
-            // 手势处理状态
             let swipeStartX = 0, swipeStartY = 0;
             let swipeHandled = false;
-            let edgeTouch = false;        // 是否从屏幕边缘开始的触摸
+            let edgeTouch = false;
             const SWIPE_THRESHOLD = 60;
             const EDGE_WIDTH = 30;
 
@@ -366,18 +365,26 @@
                 const icons = { '结婚':'💍', '乔迁':'🏠', '满月':'👶', '祝寿':'🎂', '升学':'🎓', '白事':'🕯️' };
                 return icons[name] || '📁';
             }
+
             function updateNavBar(title) {
                 document.querySelector('.nav-center').textContent = title || '人情簿';
+            }
+
+            function toggleNavButtons(show) {
+                const importBtn = document.getElementById('importBtn');
+                const aboutBtn = document.getElementById('aboutBtn');
+                if (importBtn) importBtn.style.display = show ? '' : 'none';
+                if (aboutBtn) aboutBtn.style.display = show ? '' : 'none';
             }
 
             function renderMainView() {
                 currentView = 'main';
                 currentFolderId = null;
                 updateNavBar('人情簿');
+                toggleNavButtons(true);  // 显示导入导出、关于按钮
                 document.getElementById('aboutPage').style.display = 'none';
                 const mainContent = document.getElementById('mainContent');
                 mainContent.style.display = 'block';
-                // 重建主界面结构，确保 folderGrid 存在
                 mainContent.innerHTML = '<div class="folder-grid" id="folderGrid"></div>';
                 const addRecordBtn = document.getElementById('addRecordBtn');
                 if(addRecordBtn) addRecordBtn.remove();
@@ -407,6 +414,7 @@
                 const folder = appData.folders.find(f => f.id === folderId);
                 if(!folder) return;
                 updateNavBar(folder.name);
+                toggleNavButtons(false); // 隐藏导入导出、关于按钮
                 document.getElementById('aboutPage').style.display = 'none';
                 const mainContent = document.getElementById('mainContent');
                 mainContent.style.display = 'block';
@@ -709,6 +717,7 @@
                 document.getElementById('addFolderBtn').style.display = 'none';
                 const btn = document.getElementById('addRecordBtn');
                 if(btn) btn.style.display = 'none';
+                toggleNavButtons(false); // 关于页也隐藏顶部按钮
                 updateNavBar('关于');
             };
             window.hideAbout = function() {
@@ -727,8 +736,7 @@
                 document.getElementById('importExportModal').style.display = 'none';
             };
             window.triggerFileSelect = function() {
-                const input = document.getElementById('importFileInput');
-                input.click();
+                document.getElementById('importFileInput').click();
             };
             window.handleFileSelected = function(input) {
                 const file = input.files[0];
@@ -817,11 +825,13 @@
                 ws['!cols'] = [{wch:10},{wch:12},{wch:10},{wch:12},{wch:20}];
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, '人情记录');
-                XLSX.writeFile(wb, '人情记账簿数据_' + new Date().toISOString().slice(0,10) + '.xlsx');
-                customAlert('导出成功！');
+                // 使用时间戳避免同名文件冲突
+                const fileName = '人情记账簿数据_' + new Date().getTime() + '.xlsx';
+                XLSX.writeFile(wb, fileName);
+                customAlert('导出成功！文件：' + fileName);
             };
 
-            // ---------- 手势处理（阻止浏览器默认边缘滑动，并正确分发自定义手势） ----------
+            // 手势处理
             document.addEventListener('touchstart', function(e) {
                 const touch = e.touches[0];
                 swipeStartX = touch.clientX;
@@ -835,7 +845,6 @@
                 const touch = e.touches[0];
                 const dx = touch.clientX - swipeStartX;
                 const dy = touch.clientY - swipeStartY;
-                // 如果检测到明显的水平滑动意图，则阻止浏览器默认的返回手势
                 if (Math.abs(dx) > 10 && Math.abs(dy) < Math.abs(dx) * 0.8) {
                     e.preventDefault();
                 }
@@ -846,7 +855,6 @@
                 const dx = e.changedTouches[0].clientX - swipeStartX;
                 const dy = e.changedTouches[0].clientY - swipeStartY;
                 if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < Math.abs(dx) * 0.6) {
-                    // 有效的自定义水平滑动
                     e.preventDefault();
                     swipeHandled = true;
                     if (currentView === 'main') {
@@ -865,13 +873,11 @@
                 edgeTouch = false;
             });
 
-            // 模态框背景关闭
             document.getElementById('folderModal').addEventListener('click', function(e) { if(e.target===this) hideFolderModal(); });
             document.getElementById('recordModal').addEventListener('click', function(e) { if(e.target===this) hideRecordModal(); });
             document.getElementById('importExportModal').addEventListener('click', function(e) { if(e.target===this) hideImportExportModal(); });
             document.getElementById('customConfirmOverlay').addEventListener('click', function(e) { if(e.target===this) this.style.display = 'none'; });
 
-            // 阻止浏览器默认的“后退”手势
             let popLock = false;
             window.addEventListener('popstate', function(e) {
                 if(popLock) return;
