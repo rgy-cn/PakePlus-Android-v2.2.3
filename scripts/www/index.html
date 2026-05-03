@@ -26,17 +26,10 @@
         }
         .splash-screen {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #ffbb00 0%, #ff9900 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 0.5s ease-out;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999; opacity: 1; transition: opacity 0.5s ease-out;
         }
         .splash-content { text-align: center; color: white; }
         .splash-title { font-size: 2rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
@@ -46,100 +39,52 @@
         .app-container { height: 100vh; display: none; flex-direction: column; }
         .top-nav {
             background: linear-gradient(to right, #ffbb00, #ff9900);
-            color: white;
-            padding: 15px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: white; padding: 15px 16px;
+            display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
-            min-height: 52px;
-            flex-shrink: 0;
+            position: relative; min-height: 52px; flex-shrink: 0;
         }
         .nav-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.2rem;
-            font-weight: bold;
-            white-space: nowrap;
-            pointer-events: none;
+            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: 1.2rem; font-weight: bold; white-space: nowrap; pointer-events: none;
         }
-        .nav-btn, .nav-back {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 4px;
-            white-space: nowrap;
-            z-index: 1;
+        .nav-btn {
+            background: none; border: none; color: white; font-size: 1rem;
+            cursor: pointer; padding: 8px 12px; border-radius: 4px; white-space: nowrap; z-index: 1;
         }
-        .nav-back { display: none; }
-        .nav-btn:active, .nav-back:active { background: rgba(255,255,255,0.25); transform: scale(0.95); }
+        .nav-btn:active { background: rgba(255,255,255,0.25); transform: scale(0.95); }
         .main-content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
         .folder-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
-            padding-bottom: 90px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+            margin-bottom: 20px; padding-bottom: 90px;
         }
         .folder-item {
-            background: white;
-            border-radius: 12px;
-            padding: 20px 16px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            background: white; border-radius: 12px; padding: 20px 16px;
+            text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            cursor: pointer; transition: all 0.2s ease;
         }
         .folder-item:active { transform: scale(0.97); background: #fafafa; }
         .folder-icon { font-size: 2.2rem; margin-bottom: 8px; color: #ffbb00; }
         .folder-name { font-weight: bold; margin-bottom: 4px; word-break: break-all; font-size: 1.05rem; }
         .folder-stats { font-size: 0.8rem; color: #666; line-height: 1.5; }
         .add-folder-btn, .add-record-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(to right, #ffbb00, #ff9900);
-            color: white;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            border-radius: 50%; background: linear-gradient(to right, #ffbb00, #ff9900);
+            color: white; border: none; font-size: 2rem; cursor: pointer;
             box-shadow: 0 4px 20px rgba(255, 187, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            transition: all 0.2s ease;
-            line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; transition: all 0.2s ease; line-height: 1;
         }
         .add-folder-btn:active, .add-record-btn:active { transform: scale(0.93); box-shadow: 0 2px 10px rgba(255,187,0,0.3); }
         .record-list { margin-top: 16px; padding-bottom: 90px; }
         .search-box {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 1rem;
-            outline: none;
-            background: white;
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            margin-bottom: 16px; font-size: 1rem; outline: none; background: white;
         }
         .search-box:focus { border-color: #ffbb00; box-shadow: 0 0 0 3px rgba(255,187,0,0.1); }
         .record-item {
-            background: white;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: all 0.2s ease;
         }
         .record-item:active { transform: scale(0.98); background: #fafafa; }
         .record-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -150,23 +95,13 @@
         .about-page {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #ffbb00 0%, #ff9900 100%);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-y: auto;
+            z-index: 1000; display: none; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
         }
         .about-content {
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
+            text-align: center; max-width: 400px; width: 100%;
+            background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); backdrop-filter: blur(10px);
         }
         .about-title { font-size: 1.8rem; color: #ffbb00; margin-bottom: 30px; font-weight: bold; }
         .about-developer { font-size: 1.3rem; margin-bottom: 15px; color: #ffbb00; font-weight: bold; }
@@ -182,89 +117,53 @@
         }
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            display: none;
-            justify-content: center;
-            align-items: center;
+            background: rgba(0,0,0,0.5); z-index: 2000; display: none;
+            justify-content: center; align-items: center;
         }
         .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            width: 90%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
+            background: white; border-radius: 12px; padding: 20px;
+            width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto;
         }
         .modal-title { font-size: 1.2rem; margin-bottom: 16px; text-align: center; font-weight: bold; }
         .form-group { margin-bottom: 16px; }
         .form-label { display: block; margin-bottom: 8px; font-weight: bold; }
         .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            font-size: 1rem; outline: none;
         }
         .form-input:focus { border-color: #ffbb00; box-shadow: 0 0 0 3px rgba(255,187,0,0.1); }
         .form-actions { display: flex; gap: 12px; margin-top: 20px; }
         .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            flex: 1; padding: 12px; border: none; border-radius: 8px;
+            cursor: pointer; font-size: 1rem; transition: all 0.2s ease;
         }
         .btn:active { transform: scale(0.96); }
         .btn-primary { background: linear-gradient(to right, #ffbb00, #ff9900); color: white; font-weight: bold; }
         .btn-secondary { background: #f1f3f4; color: #666; }
         .btn-danger { background: #e74c3c; color: white; font-weight: bold; }
         .context-menu {
-            position: fixed;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            z-index: 3000;
-            display: none;
-            min-width: 130px;
-            overflow: hidden;
+            position: fixed; background: white; border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 3000;
+            display: none; min-width: 130px; overflow: hidden;
         }
         .context-item { padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 1rem; }
         .context-item:last-child { border-bottom: none; color: #e74c3c; }
         .context-item:active { background: #eef0f2; }
         .exit-confirm-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4);
-            z-index: 3500;
-            display: none;
-            justify-content: center;
-            align-items: center;
+            background: rgba(0,0,0,0.4); z-index: 3500; display: none;
+            justify-content: center; align-items: center;
         }
         .exit-confirm-box {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            width: 80%;
-            max-width: 320px;
-            text-align: center;
+            background: white; border-radius: 12px; padding: 24px;
+            width: 80%; max-width: 320px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
         .exit-confirm-box h3 { margin-bottom: 20px; }
-        /* 文件导入区域优化 */
         .import-file-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 2px dashed #ddd;
-            border-radius: 12px;
-            padding: 20px 10px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: border-color 0.2s;
+            display: flex; flex-direction: column; align-items: center;
+            border: 2px dashed #ddd; border-radius: 12px; padding: 20px 10px;
+            margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s;
         }
         .import-file-area:hover { border-color: #ffbb00; }
         .import-file-area .file-icon { font-size: 2.5rem; margin-bottom: 8px; color: #aaa; }
@@ -281,8 +180,8 @@
     </div>
 
     <div class="app-container" id="appContainer">
+        <!-- 顶部导航栏（不再包含返回按钮） -->
         <div class="top-nav">
-            <button class="nav-back" id="navBackBtn" onclick="goBack()">← 返回</button>
             <button class="nav-btn" onclick="showImportExport()">💾</button>
             <div class="nav-center">人情簿</div>
             <button class="nav-btn" onclick="showAbout()">ℹ️</button>
@@ -356,9 +255,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">📥 导入数据</label>
-                <!-- 隐藏的原生文件选择器 -->
-                <input type="file" class="form-input" id="importFileInput" accept=".xlsx,.xls" style="display:none;" onchange="handleFileSelected(this)">
-                <!-- 可视的导入区域，点击触发文件选择 -->
+                <input type="file" class="form-input" id="importFileInput" style="display:none;" onchange="handleFileSelected(this)">
                 <div class="import-file-area" onclick="triggerFileSelect()" id="importArea">
                     <span class="file-icon">📂</span>
                     <span class="file-text" id="importFileLabel">点击此处选择Excel文件</span>
@@ -389,7 +286,6 @@
 
     <script>
         (function() {
-            // ---------- 数据 ----------
             let appData = JSON.parse(localStorage.getItem('humanityRecords')) || {
                 folders: [
                     { id: 'wedding', name: '结婚', records: [] },
@@ -405,10 +301,15 @@
             let currentFolderId = null;
             let contextTarget = null;
             let isEditing = false;
+
+            // 长按相关
             let longPressTimer = null;
             let pressStartX = 0, pressStartY = 0;
             let hasMoved = false;
+            let longPressTriggered = false;
             const MOVE_THRESHOLD = 15;
+
+            // 侧滑相关
             let swipeStartX = 0, swipeStartY = 0;
             let swipeHandled = false;
             const SWIPE_THRESHOLD = 60;
@@ -426,15 +327,16 @@
                 const icons = { '结婚':'💍', '乔迁':'🏠', '满月':'👶', '祝寿':'🎂', '升学':'🎓', '白事':'🕯️' };
                 return icons[name] || '📁';
             }
-            function updateNavBar(title, showBack) {
+
+            // 导航栏标题更新（不再需要返回按钮）
+            function updateNavBar(title) {
                 document.querySelector('.nav-center').textContent = title || '人情簿';
-                document.getElementById('navBackBtn').style.display = showBack ? 'block' : 'none';
             }
 
             function renderMainView() {
                 currentView = 'main';
                 currentFolderId = null;
-                updateNavBar('人情簿', false);
+                updateNavBar('人情簿');
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('addFolderBtn').style.display = 'flex';
                 document.getElementById('aboutPage').style.display = 'none';
@@ -463,7 +365,7 @@
                 currentFolderId = folderId;
                 const folder = appData.folders.find(f => f.id === folderId);
                 if(!folder) return;
-                updateNavBar(folder.name, true);
+                updateNavBar(folder.name);
                 document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('addFolderBtn').style.display = 'none';
                 document.getElementById('aboutPage').style.display = 'none';
@@ -544,6 +446,7 @@
 
             function onItemDown(e) {
                 resetLongPress();
+                longPressTriggered = false;
                 const el = e.target.closest('.folder-item') || e.target.closest('.record-item');
                 if(!el) return;
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -553,6 +456,7 @@
                 hasMoved = false;
                 longPressTimer = setTimeout(() => {
                     if(!hasMoved) {
+                        longPressTriggered = true;
                         const type = el.classList.contains('folder-item') ? 'folder' : 'record';
                         let item, index;
                         if(type === 'folder') {
@@ -581,6 +485,11 @@
             }
 
             function onItemUp(e) {
+                if(longPressTriggered) {
+                    resetLongPress();
+                    longPressTriggered = false;
+                    return;
+                }
                 resetLongPress();
                 const el = e.target.closest('.folder-item');
                 if(el && !hasMoved) {
@@ -728,6 +637,7 @@
                 renderRecords(document.getElementById('searchBox')?.value || '');
             };
 
+            // 返回主界面（供侧滑调用）
             window.goBack = function() {
                 hideContextMenu();
                 if(currentView === 'folder') {
@@ -739,6 +649,7 @@
                     hideAbout();
                 }
             };
+
             window.showAbout = function() {
                 currentView = 'about';
                 hideContextMenu();
@@ -747,18 +658,17 @@
                 document.getElementById('addFolderBtn').style.display = 'none';
                 const btn = document.getElementById('addRecordBtn');
                 if(btn) btn.style.display = 'none';
-                updateNavBar('关于', true);
+                updateNavBar('关于');
             };
             window.hideAbout = function() {
                 if(currentFolderId) showFolder(currentFolderId);
                 else renderMainView();
             };
 
-            // ---------- 导入导出（优化版） ----------
+            // ---------- 导入导出 ----------
             window.showImportExport = function() {
                 hideContextMenu();
                 document.getElementById('importExportModal').style.display = 'flex';
-                // 重置文件选择状态
                 document.getElementById('importFileInput').value = '';
                 document.getElementById('importFileName').textContent = '';
                 document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
@@ -766,13 +676,9 @@
             window.hideImportExportModal = function() {
                 document.getElementById('importExportModal').style.display = 'none';
             };
-
-            // 触发文件选择器
             window.triggerFileSelect = function() {
                 document.getElementById('importFileInput').click();
             };
-
-            // 文件选择后的回调
             window.handleFileSelected = function(input) {
                 const file = input.files[0];
                 if (file) {
@@ -783,15 +689,17 @@
                     document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
                 }
             };
-
-            // 开始导入（检查文件并执行）
             window.triggerImport = function() {
                 const fileInput = document.getElementById('importFileInput');
                 const file = fileInput.files[0];
                 if (!file) {
                     alert('请先选择要导入的Excel文件');
-                    // 若未选择，自动触发文件选择
                     triggerFileSelect();
+                    return;
+                }
+                const fileName = file.name.toLowerCase();
+                if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+                    alert('请选择扩展名为 .xlsx 或 .xls 的Excel文件');
                     return;
                 }
                 if (!confirm('导入将合并数据，跳过重复记录，确定吗？')) return;
@@ -835,7 +743,7 @@
                         document.getElementById('importFileName').textContent = '';
                         document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
                     } catch (err) {
-                        alert('解析失败：' + err.message);
+                        alert('解析失败：' + err.message + '\n请确认文件为有效的Excel表格。');
                     }
                 };
                 reader.readAsArrayBuffer(file);
@@ -857,7 +765,7 @@
                 alert('导出成功！');
             };
 
-            // 侧滑退出
+            // ---------- 侧滑逻辑（区分主界面与子页面） ----------
             document.addEventListener('touchstart', function(e) {
                 swipeStartX = e.touches[0].clientX;
                 swipeStartY = e.touches[0].clientY;
@@ -866,13 +774,19 @@
 
             document.addEventListener('touchend', function(e) {
                 if (swipeHandled) return;
-                if (currentView !== 'main') return;
                 const dx = e.changedTouches[0].clientX - swipeStartX;
                 const dy = e.changedTouches[0].clientY - swipeStartY;
-                if ((swipeStartX < 30 && dx > SWIPE_THRESHOLD && Math.abs(dy) < Math.abs(dx)*0.6) ||
-                    (swipeStartX > window.innerWidth - 30 && dx < -SWIPE_THRESHOLD && Math.abs(dy) < Math.abs(dx)*0.6)) {
-                    swipeHandled = true;
-                    showExitConfirm();
+                // 检测有效的水平滑动
+                if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < Math.abs(dx) * 0.6) {
+                    // 左侧边缘向右滑 或 右侧边缘向左滑
+                    if ((swipeStartX < 30 && dx > 0) || (swipeStartX > window.innerWidth - 30 && dx < 0)) {
+                        swipeHandled = true;
+                        if (currentView === 'main') {
+                            showExitConfirm();      // 主界面：退出确认
+                        } else {
+                            goBack();               // 子页面：返回上一级
+                        }
+                    }
                 }
             });
 
@@ -889,7 +803,7 @@
                 }, 100);
             };
 
-            // 模态框背景关闭
+            // 模态框背景点击关闭
             document.getElementById('folderModal').addEventListener('click', function(e) { if(e.target===this) hideFolderModal(); });
             document.getElementById('recordModal').addEventListener('click', function(e) { if(e.target===this) hideRecordModal(); });
             document.getElementById('importExportModal').addEventListener('click', function(e) { if(e.target===this) hideImportExportModal(); });
@@ -908,7 +822,6 @@
             });
             history.pushState(null, null, location.href);
 
-            // 启动
             bindGlobalItemEvents();
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
