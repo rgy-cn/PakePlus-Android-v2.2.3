@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>人情记账簿</title>
-    <!-- 将 xlsx 库放在本目录下，不再从 CDN 加载 -->
-    <script src="xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+    </script>
     <style>
         * {
             margin: 0;
@@ -15,6 +15,10 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
+            font-family: inherit; /* 强制继承父级字体，保证全局楷体 */
+        }
+        html {
+            font-family: '楷体', KaiTi, 'STKaiti', '华文楷体', serif; /* 根元素设定楷体 */
         }
         body {
             font-family: '楷体', KaiTi, 'STKaiti', '华文楷体', serif;
@@ -36,7 +40,12 @@
         @keyframes pulse {
             0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); }
         }
-        .app-container { height: 100vh; display: none; flex-direction: column; }
+        .app-container {
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            transform: translateZ(0); /* 启用 GPU 合成 */
+        }
         .top-nav {
             background: linear-gradient(to right, #ffbb00, #ff9900);
             color: white; padding: 15px 16px;
@@ -53,7 +62,11 @@
             cursor: pointer; padding: 8px 12px; border-radius: 4px; white-space: nowrap; z-index: 1;
         }
         .nav-btn:active { background: rgba(255,255,255,0.25); transform: scale(0.95); }
-        .main-content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+        .main-content {
+            flex: 1; overflow-y: auto; padding: 16px;
+            -webkit-overflow-scrolling: touch;
+            transform: translateZ(0); /* 启用 GPU 合成，优化滚动 */
+        }
         .folder-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
             margin-bottom: 20px; padding-bottom: 90px;
@@ -180,13 +193,13 @@
     </style>
 </head>
 <body>
+    <!-- 以下所有 HTML 内容保持不变 -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-content">
             <div class="splash-title">人情记账簿</div>
             <p>让每一份情意都有迹可循</p>
         </div>
     </div>
-
     <div class="app-container" id="appContainer">
         <div class="top-nav">
             <button class="nav-btn" id="importBtn" onclick="showImportExport()">💾</button>
@@ -198,7 +211,6 @@
         </div>
         <button class="add-folder-btn" onclick="showAddFolderModal()" id="addFolderBtn">+</button>
     </div>
-
     <div class="about-page" id="aboutPage">
         <div class="about-icon">💼</div>
         <h1 class="about-app-name">人情记账簿</h1>
@@ -214,7 +226,6 @@
             <button class="btn btn-primary" onclick="hideAbout()">返回</button>
         </div>
     </div>
-
     <div class="modal" id="folderModal">
         <div class="modal-content">
             <div class="modal-title" id="folderModalTitle">新建文件夹</div>
@@ -228,7 +239,6 @@
             </div>
         </div>
     </div>
-
     <div class="modal" id="recordModal">
         <div class="modal-content">
             <div class="modal-title" id="recordModalTitle">添加记录</div>
@@ -254,7 +264,6 @@
             </div>
         </div>
     </div>
-
     <div class="modal" id="importExportModal">
         <div class="modal-content">
             <div class="modal-title">数据备份与恢复</div>
@@ -279,12 +288,10 @@
             </div>
         </div>
     </div>
-
     <div class="context-menu" id="contextMenu">
         <div class="context-item" onclick="editItem()">✏️ 编辑</div>
         <div class="context-item" onclick="deleteItem()">🗑️ 删除</div>
     </div>
-
     <div class="custom-confirm-overlay" id="customConfirmOverlay">
         <div class="custom-confirm-box">
             <strong id="customConfirmTitle" style="font-size:1.1rem;">提示</strong>
@@ -295,7 +302,6 @@
             </div>
         </div>
     </div>
-
     <script>
         (function() {
             let appData = JSON.parse(localStorage.getItem('humanityRecords')) || {
@@ -308,24 +314,20 @@
                     { id: 'funeral', name: '白事', records: [] }
                 ]
             };
-
             let currentView = 'main';
             let currentFolderId = null;
             let contextTarget = null;
             let isEditing = false;
-
             let longPressTimer = null;
             let pressStartX = 0, pressStartY = 0;
             let hasMoved = false;
             let longPressTriggered = false;
             const MOVE_THRESHOLD = 15;
-
             let swipeStartX = 0, swipeStartY = 0;
             let swipeHandled = false;
             let edgeTouch = false;
             const SWIPE_THRESHOLD = 60;
             const EDGE_WIDTH = 30;
-
             function customAlert(msg, callback) {
                 const overlay = document.getElementById('customConfirmOverlay');
                 document.getElementById('customConfirmTitle').textContent = '提示';
@@ -339,7 +341,6 @@
                     if (callback) callback();
                 };
             }
-
             function customConfirm(msg, callback) {
                 const overlay = document.getElementById('customConfirmOverlay');
                 document.getElementById('customConfirmTitle').textContent = '确认';
@@ -359,7 +360,6 @@
                     if (callback) callback(true);
                 };
             }
-
             function saveData() {
                 try { localStorage.setItem('humanityRecords', JSON.stringify(appData)); }
                 catch(e) { customAlert('存储空间不足，请导出数据后清理。'); }
@@ -373,18 +373,15 @@
                 const icons = { '结婚':'💍', '乔迁':'🏠', '满月':'👶', '祝寿':'🎂', '升学':'🎓', '白事':'🕯️' };
                 return icons[name] || '📁';
             }
-
             function updateNavBar(title) {
                 document.querySelector('.nav-center').textContent = title || '人情簿';
             }
-
             function toggleNavButtons(show) {
                 const importBtn = document.getElementById('importBtn');
                 const aboutBtn = document.getElementById('aboutBtn');
                 if (importBtn) importBtn.style.display = show ? '' : 'none';
                 if (aboutBtn) aboutBtn.style.display = show ? '' : 'none';
             }
-
             function renderMainView() {
                 currentView = 'main';
                 currentFolderId = null;
@@ -397,7 +394,6 @@
                 const addRecordBtn = document.getElementById('addRecordBtn');
                 if(addRecordBtn) addRecordBtn.remove();
                 document.getElementById('addFolderBtn').style.display = 'flex';
-
                 const grid = document.getElementById('folderGrid');
                 if(!grid) return;
                 grid.innerHTML = '';
@@ -415,7 +411,6 @@
                     grid.appendChild(div);
                 });
             }
-
             function showFolder(folderId) {
                 currentView = 'folder';
                 currentFolderId = folderId;
@@ -445,7 +440,6 @@
                 btn.style.display = 'flex';
                 btn.onclick = () => showAddRecordModal();
             }
-
             function renderRecords(searchTerm) {
                 const folder = appData.folders.find(f => f.id === currentFolderId);
                 if(!folder) return;
@@ -478,12 +472,10 @@
                     list.appendChild(div);
                 });
             }
-
             window.searchRecords = function() {
                 const box = document.getElementById('searchBox');
                 if(box) renderRecords(box.value);
             };
-
             function resetLongPress() {
                 if(longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
                 hasMoved = false;
@@ -505,7 +497,6 @@
                 menu.style.display = 'block';
                 if(navigator.vibrate) navigator.vibrate(15);
             }
-
             function onItemDown(e) {
                 resetLongPress();
                 longPressTriggered = false;
@@ -535,7 +526,6 @@
                     }
                 }, 500);
             }
-
             function onItemMove(e) {
                 if(!longPressTimer) return;
                 const cx = e.touches ? e.touches[0].clientX : e.clientX;
@@ -545,7 +535,6 @@
                     resetLongPress();
                 }
             }
-
             function onItemUp(e) {
                 if(longPressTriggered) {
                     resetLongPress();
@@ -560,7 +549,6 @@
                     if(folder) showFolder(folder.id);
                 }
             }
-
             function bindGlobalItemEvents() {
                 const container = document.getElementById('mainContent');
                 container.addEventListener('touchstart', (e) => {
@@ -587,13 +575,11 @@
                     if(e.target.closest('.folder-item') || e.target.closest('.record-item')) e.preventDefault();
                 });
             }
-
             document.addEventListener('click', function(e) {
                 if(!e.target.closest('.context-menu') && !e.target.closest('.folder-item') && !e.target.closest('.record-item')) {
                     hideContextMenu();
                 }
             });
-
             window.editItem = function() {
                 if(!contextTarget) return;
                 hideContextMenu();
@@ -622,7 +608,6 @@
                     contextTarget = null;
                 });
             };
-
             window.showAddFolderModal = function() {
                 document.getElementById('folderModalTitle').textContent = '新建文件夹';
                 document.getElementById('folderNameInput').value = '';
@@ -655,7 +640,6 @@
                 hideFolderModal();
                 renderMainView();
             };
-
             window.showAddRecordModal = function() {
                 document.getElementById('recordModalTitle').textContent = '添加记录';
                 document.getElementById('recordNameInput').value = '';
@@ -700,7 +684,6 @@
                 hideRecordModal();
                 renderRecords(document.getElementById('searchBox')?.value || '');
             };
-
             let goBackLock = false;
             window.goBack = function() {
                 if(goBackLock) return;
@@ -716,7 +699,6 @@
                 }
                 setTimeout(() => { goBackLock = false; }, 300);
             };
-
             window.showAbout = function() {
                 currentView = 'about';
                 hideContextMenu();
@@ -732,7 +714,6 @@
                 if(currentFolderId) showFolder(currentFolderId);
                 else renderMainView();
             };
-
             window.showImportExport = function() {
                 hideContextMenu();
                 document.getElementById('importExportModal').style.display = 'flex';
@@ -743,7 +724,6 @@
             window.hideImportExportModal = function() {
                 document.getElementById('importExportModal').style.display = 'none';
             };
-
             window.handleFileSelected = function(input) {
                 const file = input.files[0];
                 if (file) {
@@ -814,7 +794,6 @@
                     reader.readAsArrayBuffer(file);
                 });
             };
-
             window.exportData = function() {
                 const data = [];
                 appData.folders.forEach(f => {
@@ -834,7 +813,6 @@
                 XLSX.writeFile(wb, fileName);
                 customAlert('导出成功！文件：' + fileName);
             };
-
             // 手势处理
             document.addEventListener('touchstart', function(e) {
                 const touch = e.touches[0];
@@ -843,7 +821,6 @@
                 swipeHandled = false;
                 edgeTouch = (swipeStartX < EDGE_WIDTH || swipeStartX > window.innerWidth - EDGE_WIDTH);
             }, { passive: false });
-
             document.addEventListener('touchmove', function(e) {
                 if (!edgeTouch || swipeHandled) return;
                 const touch = e.touches[0];
@@ -855,7 +832,6 @@
                     }
                 }
             }, { passive: false });
-
             document.addEventListener('touchend', function(e) {
                 if (swipeHandled || !edgeTouch) return;
                 const dx = e.changedTouches[0].clientX - swipeStartX;
@@ -878,12 +854,10 @@
                 }
                 edgeTouch = false;
             });
-
             document.getElementById('folderModal').addEventListener('click', function(e) { if(e.target===this) hideFolderModal(); });
             document.getElementById('recordModal').addEventListener('click', function(e) { if(e.target===this) hideRecordModal(); });
             document.getElementById('importExportModal').addEventListener('click', function(e) { if(e.target===this) hideImportExportModal(); });
             document.getElementById('customConfirmOverlay').addEventListener('click', function(e) { if(e.target===this) this.style.display = 'none'; });
-
             let popLock = false;
             window.addEventListener('popstate', function(e) {
                 if(popLock) return;
@@ -895,7 +869,6 @@
                 setTimeout(() => { popLock = false; }, 300);
             });
             history.pushState(null, null, location.href);
-
             bindGlobalItemEvents();
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
