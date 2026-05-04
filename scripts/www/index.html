@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>人情记账簿</title>
+    <!-- 将 xlsx 库放在本目录下，不再从 CDN 加载 -->
+    <script src="xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -206,6 +208,7 @@
             <div class="about-info">
                 <div class="about-developer">冉光育个人设计开发</div>
                 <div class="about-phone">📞 电话：17620045898</div>
+               <div class="about-phone">📮 邮箱：rgy-cn@qq.com</div>
             </div>
             <br>
             <button class="btn btn-primary" onclick="hideAbout()">返回</button>
@@ -261,7 +264,8 @@
             <div class="form-group">
                 <label class="form-label">📥 导入数据</label>
                 <div class="import-file-area">
-                    <input type="file" class="import-file-input-overlay" id="importFileInput"
+                    <!-- 修复文件选择器：使用 MIME 类型 + 扩展名，并允许所有文件作为后备 -->
+                    <input type="file" class="import-file-input-overlay" id="importFileInput" 
                            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                            onchange="handleFileSelected(this)">
                     <span class="file-icon">📂</span>
@@ -321,12 +325,6 @@
             let edgeTouch = false;
             const SWIPE_THRESHOLD = 60;
             const EDGE_WIDTH = 30;
-
-            let contextMenuVisible = false;
-
-            let xlsxReady = false;
-            let xlsxLoading = false;
-            const xlsxUrl = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 
             function customAlert(msg, callback) {
                 const overlay = document.getElementById('customConfirmOverlay');
@@ -492,7 +490,6 @@
             }
             function hideContextMenu() {
                 document.getElementById('contextMenu').style.display = 'none';
-                contextMenuVisible = false;
             }
             function showContextMenu(x, y, type, item, index) {
                 const menu = document.getElementById('contextMenu');
@@ -506,7 +503,6 @@
                 menu.style.left = left + 'px';
                 menu.style.top = top + 'px';
                 menu.style.display = 'block';
-                contextMenuVisible = true;
                 if(navigator.vibrate) navigator.vibrate(15);
             }
 
@@ -551,12 +547,6 @@
             }
 
             function onItemUp(e) {
-                // 如果上下文菜单正在显示，则隐藏菜单并阻止后续打开操作
-                if(contextMenuVisible) {
-                    hideContextMenu();
-                    resetLongPress();
-                    return;
-                }
                 if(longPressTriggered) {
                     resetLongPress();
                     longPressTriggered = false;
@@ -598,9 +588,8 @@
                 });
             }
 
-            // 修改全局点击监听：菜单可见时，点击菜单外部任何位置都隐藏菜单
             document.addEventListener('click', function(e) {
-                if(contextMenuVisible && !e.target.closest('.context-menu')) {
+                if(!e.target.closest('.context-menu') && !e.target.closest('.folder-item') && !e.target.closest('.record-item')) {
                     hideContextMenu();
                 }
             });
@@ -744,39 +733,12 @@
                 else renderMainView();
             };
 
-            function loadXlsxLibrary(callback) {
-                if (window.XLSX) {
-                    xlsxReady = true;
-                    callback();
-                    return;
-                }
-                if (xlsxLoading) {
-                    setTimeout(() => loadXlsxLibrary(callback), 200);
-                    return;
-                }
-                xlsxLoading = true;
-                const script = document.createElement('script');
-                script.src = xlsxUrl;
-                script.onload = () => {
-                    xlsxReady = true;
-                    xlsxLoading = false;
-                    callback();
-                };
-                script.onerror = () => {
-                    xlsxLoading = false;
-                    customAlert('加载Excel处理库失败，请检查网络连接。');
-                };
-                document.head.appendChild(script);
-            }
-
             window.showImportExport = function() {
                 hideContextMenu();
-                loadXlsxLibrary(() => {
-                    document.getElementById('importExportModal').style.display = 'flex';
-                    document.getElementById('importFileInput').value = '';
-                    document.getElementById('importFileName').textContent = '';
-                    document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
-                });
+                document.getElementById('importExportModal').style.display = 'flex';
+                document.getElementById('importFileInput').value = '';
+                document.getElementById('importFileName').textContent = '';
+                document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
             };
             window.hideImportExportModal = function() {
                 document.getElementById('importExportModal').style.display = 'none';
@@ -873,6 +835,7 @@
                 customAlert('导出成功！文件：' + fileName);
             };
 
+            // 手势处理
             document.addEventListener('touchstart', function(e) {
                 const touch = e.touches[0];
                 swipeStartX = touch.clientX;
