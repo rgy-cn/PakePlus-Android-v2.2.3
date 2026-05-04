@@ -298,6 +298,7 @@
             let currentFolderId = null;
             let contextTarget = null;
             let isEditing = false;
+            let menuVisible = false; // 标记菜单是否显示
 
             // ---------- 长按与移动判定 ----------
             let longPressTimer = null;
@@ -488,6 +489,7 @@
             // ---------- 上下文菜单 ----------
             function hideContextMenu() {
                 document.getElementById('contextMenu').style.display = 'none';
+                menuVisible = false;
             }
 
             function showContextMenu(x, y, type, item, index) {
@@ -502,10 +504,11 @@
                 menu.style.left = left + 'px';
                 menu.style.top = top + 'px';
                 menu.style.display = 'block';
+                menuVisible = true;
                 if(navigator.vibrate) navigator.vibrate(15);
             }
 
-            // ---------- 长按/滑动/点击逻辑（修复滑动误开文件夹）----------
+            // ---------- 长按/滑动/点击逻辑（彻底修复菜单显示时点击不跳转）----------
             function clearLongPressTimer() {
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
@@ -551,20 +554,27 @@
                 const cx = e.touches ? e.touches[0].clientX : e.clientX;
                 const cy = e.touches ? e.touches[0].clientY : e.clientY;
                 if (Math.abs(cx - pressStartX) > MOVE_THRESHOLD || Math.abs(cy - pressStartY) > MOVE_THRESHOLD) {
-                    hasMoved = true;          // 标记已移动
-                    clearLongPressTimer();     // 取消长按定时器
+                    hasMoved = true;
+                    clearLongPressTimer();
                 }
             }
 
             function onItemUp(e) {
-                const wasMoved = hasMoved;    // 先记录移动状态
+                const wasMoved = hasMoved;
                 if (longPressTriggered) {
                     resetTouchState();
                     return;
                 }
                 resetTouchState();
 
-                // 全局侧滑激活时阻止文件夹打开
+                // ============== 核心修复：菜单显示时，点击任何条目都只关闭菜单，绝对不打开 ==============
+                if (menuVisible) {
+                    hideContextMenu();
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+
                 if (swipeHandled) return;
 
                 const el = e.target.closest('.folder-item');
@@ -584,7 +594,6 @@
                     if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemMove(e);
                 }, { passive: false });
                 container.addEventListener('touchend', (e) => {
-                    if (swipeHandled) return;   // 侧滑激活，不处理点击
                     if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemUp(e);
                 });
                 container.addEventListener('touchcancel', resetTouchState);
@@ -595,7 +604,6 @@
                     if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemMove(e);
                 });
                 container.addEventListener('mouseup', (e) => {
-                    if (swipeHandled) return;
                     if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemUp(e);
                 });
                 container.addEventListener('mouseleave', resetTouchState);
@@ -604,8 +612,9 @@
                 });
             }
 
+            // 全局点击任意非菜单区域关闭菜单
             document.addEventListener('click', function(e) {
-                if (!e.target.closest('.context-menu') && !e.target.closest('.folder-item') && !e.target.closest('.record-item')) {
+                if (!e.target.closest('.context-menu')) {
                     hideContextMenu();
                 }
             });
@@ -872,7 +881,7 @@
                 const dy = e.changedTouches[0].clientY - swipeStartY;
                 if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < Math.abs(dx) * 0.6) {
                     e.preventDefault();
-                    swipeHandled = true;   // 防止打开文件夹
+                    swipeHandled = true;
                     if (currentView === 'main') {
                         const now = Date.now();
                         if (!lastSwipeExitTime || (now - lastSwipeExitTime) > 1000) {
