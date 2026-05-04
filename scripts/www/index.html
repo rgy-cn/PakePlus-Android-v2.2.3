@@ -4,29 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>人情记账簿</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-    </script>
+    <!-- 本地 xlsx 库，请确保文件在同级目录 -->
+    <script src="./xlsx.full.min.js"></script>
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            -webkit-user-select: none;
-            font-family: inherit; /* 强制继承父级字体，保证全局楷体 */
+            user-select: none; -webkit-user-select: none;
+            font-family: inherit;
         }
-        html {
-            font-family: '楷体', KaiTi, 'STKaiti', '华文楷体', serif; /* 根元素设定楷体 */
-        }
+        html { font-family: '楷体', KaiTi, 'STKaiti', '华文楷体', serif; }
         body {
             font-family: '楷体', KaiTi, 'STKaiti', '华文楷体', serif;
-            background-color: #f5f5f5;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-            overscroll-behavior: none;
+            background-color: #f5f5f5; height: 100vh; overflow: hidden;
+            position: relative; overscroll-behavior: none;
         }
         input, button, textarea, select { font-family: inherit; }
         .splash-screen {
@@ -37,19 +29,12 @@
         }
         .splash-content { text-align: center; color: white; }
         .splash-title { font-size: 2rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
-        @keyframes pulse {
-            0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); }
-        }
-        .app-container {
-            height: 100vh;
-            display: none;
-            flex-direction: column;
-            transform: translateZ(0); /* 启用 GPU 合成 */
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .app-container { height: 100vh; display: none; flex-direction: column; transform: translateZ(0); }
         .top-nav {
             background: linear-gradient(to right, #ffbb00, #ff9900);
-            color: white; padding: 15px 16px;
-            display: flex; justify-content: space-between; align-items: center;
+            color: white; padding: 15px 16px; display: flex;
+            justify-content: space-between; align-items: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: relative; min-height: 52px; flex-shrink: 0;
         }
@@ -59,13 +44,14 @@
         }
         .nav-btn {
             background: none; border: none; color: white; font-size: 1rem;
-            cursor: pointer; padding: 8px 12px; border-radius: 4px; white-space: nowrap; z-index: 1;
+            cursor: pointer; padding: 8px 12px; border-radius: 4px;
+            white-space: nowrap; z-index: 1;
         }
         .nav-btn:active { background: rgba(255,255,255,0.25); transform: scale(0.95); }
         .main-content {
             flex: 1; overflow-y: auto; padding: 16px;
             -webkit-overflow-scrolling: touch;
-            transform: translateZ(0); /* 启用 GPU 合成，优化滚动 */
+            transform: translateZ(0);
         }
         .folder-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
@@ -81,7 +67,7 @@
         .folder-name { font-weight: bold; margin-bottom: 4px; word-break: break-all; font-size: 1.05rem; }
         .folder-stats { font-size: 0.8rem; color: #666; line-height: 1.5; }
         .add-folder-btn, .add-record-btn {
-            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            position: fixed; bottom: 60px; right: 20px; width: 60px; height: 60px;
             border-radius: 50%; background: linear-gradient(to right, #ffbb00, #ff9900);
             color: white; border: none; font-size: 2rem; cursor: pointer;
             box-shadow: 0 4px 20px rgba(255, 187, 0, 0.4);
@@ -89,7 +75,7 @@
             z-index: 100; transition: all 0.2s ease; line-height: 1;
         }
         .add-folder-btn:active, .add-record-btn:active { transform: scale(0.93); }
-        .record-list { margin-top: 16px; padding-bottom: 90px; }
+        .record-list { margin-top: 16px; padding-bottom: 80px; }
         .search-box {
             width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
             margin-bottom: 16px; font-size: 1rem; outline: none; background: white;
@@ -124,12 +110,8 @@
         .about-app-name { font-size: 2rem; color: white; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); animation: fadeInDown 0.8s ease-out; }
         .about-description { color: white; font-size: 1.1rem; margin-bottom: 30px; opacity: 0.9; }
         .about-icon { font-size: 3rem; margin-bottom: 20px; color: white; animation: float 3s ease-in-out infinite; }
-        @keyframes float {
-            0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); }
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 2000; display: none;
@@ -176,11 +158,9 @@
         }
         .custom-confirm-box .msg { margin: 15px 0 20px; font-size: 1rem; color: #333; }
         .import-file-area {
-            position: relative;
-            display: flex; flex-direction: column; align-items: center;
+            position: relative; display: flex; flex-direction: column; align-items: center;
             border: 2px dashed #ddd; border-radius: 12px; padding: 20px 10px;
-            margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s;
-            overflow: hidden;
+            margin-bottom: 16px; cursor: pointer; transition: border-color 0.2s; overflow: hidden;
         }
         .import-file-area:hover { border-color: #ffbb00; }
         .import-file-area .file-icon { font-size: 2.5rem; margin-bottom: 8px; color: #aaa; position: relative; z-index: 1; }
@@ -193,7 +173,6 @@
     </style>
 </head>
 <body>
-    <!-- 以下所有 HTML 内容保持不变 -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-content">
             <div class="splash-title">人情记账簿</div>
@@ -220,7 +199,7 @@
             <div class="about-info">
                 <div class="about-developer">冉光育个人设计开发</div>
                 <div class="about-phone">📞 电话：17620045898</div>
-               <div class="about-phone">📮 邮箱：rgy-cn@qq.com</div>
+                <div class="about-phone">📮 邮箱：rgy-cn@qq.com</div>
             </div>
             <br>
             <button class="btn btn-primary" onclick="hideAbout()">返回</button>
@@ -273,8 +252,7 @@
             <div class="form-group">
                 <label class="form-label">📥 导入数据</label>
                 <div class="import-file-area">
-                    <!-- 修复文件选择器：使用 MIME 类型 + 扩展名，并允许所有文件作为后备 -->
-                    <input type="file" class="import-file-input-overlay" id="importFileInput" 
+                    <input type="file" class="import-file-input-overlay" id="importFileInput"
                            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                            onchange="handleFileSelected(this)">
                     <span class="file-icon">📂</span>
@@ -302,8 +280,10 @@
             </div>
         </div>
     </div>
+
     <script>
         (function() {
+            // ---------- 数据存储 ----------
             let appData = JSON.parse(localStorage.getItem('humanityRecords')) || {
                 folders: [
                     { id: 'wedding', name: '结婚', records: [] },
@@ -318,16 +298,35 @@
             let currentFolderId = null;
             let contextTarget = null;
             let isEditing = false;
+
+            // ---------- 长按与移动判定 ----------
             let longPressTimer = null;
             let pressStartX = 0, pressStartY = 0;
             let hasMoved = false;
             let longPressTriggered = false;
-            const MOVE_THRESHOLD = 15;
+            const MOVE_THRESHOLD = 15;  // 超过此像素视为移动
+
+            // ---------- 全局侧滑相关 ----------
             let swipeStartX = 0, swipeStartY = 0;
             let swipeHandled = false;
             let edgeTouch = false;
             const SWIPE_THRESHOLD = 60;
             const EDGE_WIDTH = 30;
+            let lastSwipeExitTime = 0;   // 双击退出计时
+
+            // ---------- 工具函数 ----------
+            function showToast(msg) {
+                if (window.plus && plus.nativeUI) {
+                    plus.nativeUI.toast(msg, { duration: 'short' });
+                } else {
+                    let toast = document.createElement('div');
+                    toast.textContent = msg;
+                    toast.style.cssText = 'position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; padding:10px 20px; border-radius:20px; z-index:10000; font-size:0.9rem; pointer-events:none;';
+                    document.body.appendChild(toast);
+                    setTimeout(() => { toast.remove(); }, 1500);
+                }
+            }
+
             function customAlert(msg, callback) {
                 const overlay = document.getElementById('customConfirmOverlay');
                 document.getElementById('customConfirmTitle').textContent = '提示';
@@ -341,6 +340,7 @@
                     if (callback) callback();
                 };
             }
+
             function customConfirm(msg, callback) {
                 const overlay = document.getElementById('customConfirmOverlay');
                 document.getElementById('customConfirmTitle').textContent = '确认';
@@ -349,7 +349,6 @@
                 const okBtn = document.getElementById('customConfirmOk');
                 okBtn.textContent = '确定';
                 overlay.style.display = 'flex';
-                
                 const cancelBtn = document.getElementById('customConfirmCancel');
                 cancelBtn.onclick = function() {
                     overlay.style.display = 'none';
@@ -360,37 +359,43 @@
                     if (callback) callback(true);
                 };
             }
+
             function saveData() {
                 try { localStorage.setItem('humanityRecords', JSON.stringify(appData)); }
                 catch(e) { customAlert('存储空间不足，请导出数据后清理。'); }
             }
+
             function escapeHTML(str) {
                 const div = document.createElement('div');
                 div.textContent = str;
                 return div.innerHTML;
             }
+
             function getFolderIcon(name) {
                 const icons = { '结婚':'💍', '乔迁':'🏠', '满月':'👶', '祝寿':'🎂', '升学':'🎓', '白事':'🕯️' };
                 return icons[name] || '📁';
             }
+
             function updateNavBar(title) {
                 document.querySelector('.nav-center').textContent = title || '人情簿';
             }
+
             function toggleNavButtons(show) {
-                const importBtn = document.getElementById('importBtn');
-                const aboutBtn = document.getElementById('aboutBtn');
-                if (importBtn) importBtn.style.display = show ? '' : 'none';
-                if (aboutBtn) aboutBtn.style.display = show ? '' : 'none';
+                document.getElementById('importBtn').style.display = show ? '' : 'none';
+                document.getElementById('aboutBtn').style.display = show ? '' : 'none';
             }
+
+            // ---------- 视图渲染 ----------
             function renderMainView() {
                 currentView = 'main';
                 currentFolderId = null;
+                lastSwipeExitTime = 0;
                 updateNavBar('人情簿');
                 toggleNavButtons(true);
                 document.getElementById('aboutPage').style.display = 'none';
-                const mainContent = document.getElementById('mainContent');
-                mainContent.style.display = 'block';
-                mainContent.innerHTML = '<div class="folder-grid" id="folderGrid"></div>';
+                const mc = document.getElementById('mainContent');
+                mc.style.display = 'block';
+                mc.innerHTML = '<div class="folder-grid" id="folderGrid"></div>';
                 const addRecordBtn = document.getElementById('addRecordBtn');
                 if(addRecordBtn) addRecordBtn.remove();
                 document.getElementById('addFolderBtn').style.display = 'flex';
@@ -399,7 +404,7 @@
                 grid.innerHTML = '';
                 appData.folders.forEach(f => {
                     const count = f.records.length;
-                    const total = f.records.reduce((s,r) => s + parseFloat(r.amount||0), 0);
+                    const total = f.records.reduce((s, r) => s + parseFloat(r.amount||0), 0);
                     const div = document.createElement('div');
                     div.className = 'folder-item';
                     div.setAttribute('data-folder-id', f.id);
@@ -411,6 +416,7 @@
                     grid.appendChild(div);
                 });
             }
+
             function showFolder(folderId) {
                 currentView = 'folder';
                 currentFolderId = folderId;
@@ -419,9 +425,9 @@
                 updateNavBar(folder.name);
                 toggleNavButtons(false);
                 document.getElementById('aboutPage').style.display = 'none';
-                const mainContent = document.getElementById('mainContent');
-                mainContent.style.display = 'block';
-                mainContent.innerHTML = `
+                const mc = document.getElementById('mainContent');
+                mc.style.display = 'block';
+                mc.innerHTML = `
                     <div style="padding:16px;">
                         <input type="text" class="search-box" id="searchBox" placeholder="🔍 搜索姓名..." oninput="searchRecords()">
                         <div class="record-list" id="recordList"></div>
@@ -440,6 +446,7 @@
                 btn.style.display = 'flex';
                 btn.onclick = () => showAddRecordModal();
             }
+
             function renderRecords(searchTerm) {
                 const folder = appData.folders.find(f => f.id === currentFolderId);
                 if(!folder) return;
@@ -472,24 +479,24 @@
                     list.appendChild(div);
                 });
             }
+
             window.searchRecords = function() {
                 const box = document.getElementById('searchBox');
                 if(box) renderRecords(box.value);
             };
-            function resetLongPress() {
-                if(longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-                hasMoved = false;
-            }
+
+            // ---------- 上下文菜单 ----------
             function hideContextMenu() {
                 document.getElementById('contextMenu').style.display = 'none';
             }
+
             function showContextMenu(x, y, type, item, index) {
                 const menu = document.getElementById('contextMenu');
                 contextTarget = { type, item, index };
                 const w = 140, h = 90;
                 let left = x, top = y;
-                if(left + w > window.innerWidth) left = window.innerWidth - w - 10;
-                if(top + h > window.innerHeight) top = window.innerHeight - h - 10;
+                if(left + w > innerWidth) left = innerWidth - w - 10;
+                if(top + h > innerHeight) top = innerHeight - h - 10;
                 if(left < 5) left = 5;
                 if(top < 5) top = 5;
                 menu.style.left = left + 'px';
@@ -497,22 +504,35 @@
                 menu.style.display = 'block';
                 if(navigator.vibrate) navigator.vibrate(15);
             }
-            function onItemDown(e) {
-                resetLongPress();
-                longPressTriggered = false;
-                const el = e.target.closest('.folder-item') || e.target.closest('.record-item');
-                if(!el) return;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                pressStartX = clientX;
-                pressStartY = clientY;
+
+            // ---------- 长按/滑动/点击逻辑（修复滑动误开文件夹）----------
+            function clearLongPressTimer() {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }
+
+            function resetTouchState() {
+                clearLongPressTimer();
                 hasMoved = false;
+                longPressTriggered = false;
+            }
+
+            function onItemDown(e) {
+                resetTouchState();
+                const el = e.target.closest('.folder-item') || e.target.closest('.record-item');
+                if (!el) return;
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                pressStartX = cx;
+                pressStartY = cy;
                 longPressTimer = setTimeout(() => {
-                    if(!hasMoved) {
+                    if (!hasMoved) {
                         longPressTriggered = true;
                         const type = el.classList.contains('folder-item') ? 'folder' : 'record';
                         let item, index;
-                        if(type === 'folder') {
+                        if (type === 'folder') {
                             const fid = el.getAttribute('data-folder-id');
                             item = appData.folders.find(f => f.id === fid);
                             index = null;
@@ -522,84 +542,96 @@
                             item = folder ? folder.records[idx] : null;
                             index = idx;
                         }
-                        if(item) showContextMenu(pressStartX, pressStartY, type, item, index);
+                        if (item) showContextMenu(pressStartX, pressStartY, type, item, index);
                     }
                 }, 500);
             }
+
             function onItemMove(e) {
-                if(!longPressTimer) return;
                 const cx = e.touches ? e.touches[0].clientX : e.clientX;
                 const cy = e.touches ? e.touches[0].clientY : e.clientY;
-                if(Math.abs(cx - pressStartX) > MOVE_THRESHOLD || Math.abs(cy - pressStartY) > MOVE_THRESHOLD) {
-                    hasMoved = true;
-                    resetLongPress();
+                if (Math.abs(cx - pressStartX) > MOVE_THRESHOLD || Math.abs(cy - pressStartY) > MOVE_THRESHOLD) {
+                    hasMoved = true;          // 标记已移动
+                    clearLongPressTimer();     // 取消长按定时器
                 }
             }
+
             function onItemUp(e) {
-                if(longPressTriggered) {
-                    resetLongPress();
-                    longPressTriggered = false;
+                const wasMoved = hasMoved;    // 先记录移动状态
+                if (longPressTriggered) {
+                    resetTouchState();
                     return;
                 }
-                resetLongPress();
+                resetTouchState();
+
+                // 全局侧滑激活时阻止文件夹打开
+                if (swipeHandled) return;
+
                 const el = e.target.closest('.folder-item');
-                if(el && !hasMoved) {
+                if (el && !wasMoved) {
                     const fid = el.getAttribute('data-folder-id');
                     const folder = appData.folders.find(f => f.id === fid);
-                    if(folder) showFolder(folder.id);
+                    if (folder) showFolder(folder.id);
                 }
             }
+
             function bindGlobalItemEvents() {
                 const container = document.getElementById('mainContent');
                 container.addEventListener('touchstart', (e) => {
-                    if(e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemDown(e);
+                    if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemDown(e);
                 }, { passive: false });
                 container.addEventListener('touchmove', (e) => {
-                    if(e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemMove(e);
+                    if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemMove(e);
                 }, { passive: false });
                 container.addEventListener('touchend', (e) => {
-                    if(e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemUp(e);
+                    if (swipeHandled) return;   // 侧滑激活，不处理点击
+                    if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemUp(e);
                 });
-                container.addEventListener('touchcancel', resetLongPress);
+                container.addEventListener('touchcancel', resetTouchState);
                 container.addEventListener('mousedown', (e) => {
-                    if(e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemDown(e);
+                    if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemDown(e);
                 });
                 container.addEventListener('mousemove', (e) => {
-                    if(e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemMove(e);
+                    if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemMove(e);
                 });
                 container.addEventListener('mouseup', (e) => {
-                    if(e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemUp(e);
+                    if (swipeHandled) return;
+                    if (e.target.closest('.folder-item') || e.target.closest('.record-item')) onItemUp(e);
                 });
-                container.addEventListener('mouseleave', resetLongPress);
+                container.addEventListener('mouseleave', resetTouchState);
                 container.addEventListener('contextmenu', (e) => {
-                    if(e.target.closest('.folder-item') || e.target.closest('.record-item')) e.preventDefault();
+                    if (e.target.closest('.folder-item') || e.target.closest('.record-item')) e.preventDefault();
                 });
             }
+
             document.addEventListener('click', function(e) {
-                if(!e.target.closest('.context-menu') && !e.target.closest('.folder-item') && !e.target.closest('.record-item')) {
+                if (!e.target.closest('.context-menu') && !e.target.closest('.folder-item') && !e.target.closest('.record-item')) {
                     hideContextMenu();
                 }
             });
+
+            // ---------- 编辑/删除 ----------
             window.editItem = function() {
-                if(!contextTarget) return;
+                if (!contextTarget) return;
                 hideContextMenu();
                 const { type, item, index } = contextTarget;
-                if(type === 'folder') showEditFolderModal(item);
-                else if(type === 'record') showEditRecordModal(item, index);
+                if (type === 'folder') showEditFolderModal(item);
+                else if (type === 'record') showEditRecordModal(item, index);
             };
+
             window.deleteItem = function() {
-                if(!contextTarget) return;
+                if (!contextTarget) return;
                 hideContextMenu();
                 customConfirm('确定要删除吗？此操作不可恢复。', function(confirmed) {
-                    if(!confirmed) return;
+                    if (!confirmed) return;
                     const { type, item, index } = contextTarget;
-                    if(type === 'folder') {
+                    if (type === 'folder') {
                         appData.folders = appData.folders.filter(f => f.id !== item.id);
                         saveData();
                         renderMainView();
-                    } else if(type === 'record') {
+                    } else if (type === 'record') {
                         const folder = appData.folders.find(f => f.id === currentFolderId);
-                        if(folder && index >= 0 && index < folder.records.length) {
+                        if (folder && index >= 0 && index < folder.records.length) {
                             folder.records.splice(index, 1);
                             saveData();
                             renderRecords(document.getElementById('searchBox')?.value || '');
@@ -608,112 +640,88 @@
                     contextTarget = null;
                 });
             };
+
+            // ---------- 弹窗控制 ----------
             window.showAddFolderModal = function() {
                 document.getElementById('folderModalTitle').textContent = '新建文件夹';
                 document.getElementById('folderNameInput').value = '';
-                isEditing = false;
-                contextTarget = null;
+                isEditing = false; contextTarget = null;
                 document.getElementById('folderModal').style.display = 'flex';
                 setTimeout(() => document.getElementById('folderNameInput').focus(), 100);
             };
+
             function showEditFolderModal(folder) {
                 document.getElementById('folderModalTitle').textContent = '编辑文件夹';
                 document.getElementById('folderNameInput').value = folder.name;
-                contextTarget = { type:'folder', item:folder, index:null };
+                contextTarget = { type: 'folder', item: folder };
                 isEditing = true;
                 document.getElementById('folderModal').style.display = 'flex';
                 setTimeout(() => document.getElementById('folderNameInput').focus(), 100);
             }
+
             window.hideFolderModal = function() {
                 document.getElementById('folderModal').style.display = 'none';
             };
+
             window.saveFolder = function() {
                 const name = document.getElementById('folderNameInput').value.trim();
-                if(!name) { customAlert('请输入文件夹名称'); return; }
-                if(isEditing && contextTarget && contextTarget.item) {
+                if (!name) { customAlert('请输入文件夹名称'); return; }
+                if (isEditing && contextTarget && contextTarget.item) {
                     const folder = appData.folders.find(f => f.id === contextTarget.item.id);
-                    if(folder) folder.name = name;
+                    if (folder) folder.name = name;
                 } else {
                     appData.folders.push({ id: Date.now().toString(), name, records: [] });
                 }
-                saveData();
-                hideFolderModal();
-                renderMainView();
+                saveData(); hideFolderModal(); renderMainView();
             };
+
             window.showAddRecordModal = function() {
                 document.getElementById('recordModalTitle').textContent = '添加记录';
                 document.getElementById('recordNameInput').value = '';
                 document.getElementById('recordAmountInput').value = '';
                 document.getElementById('recordNoteInput').value = '';
                 document.getElementById('recordDateInput').value = new Date().toISOString().split('T')[0];
-                isEditing = false;
-                contextTarget = null;
+                isEditing = false; contextTarget = null;
                 document.getElementById('recordModal').style.display = 'flex';
                 setTimeout(() => document.getElementById('recordNameInput').focus(), 100);
             };
+
             function showEditRecordModal(record, index) {
                 document.getElementById('recordModalTitle').textContent = '编辑记录';
                 document.getElementById('recordNameInput').value = record.name;
                 document.getElementById('recordAmountInput').value = record.amount;
                 document.getElementById('recordDateInput').value = record.date;
                 document.getElementById('recordNoteInput').value = record.note || '';
-                contextTarget = { type:'record', item:record, index };
+                contextTarget = { type: 'record', item: record, index };
                 isEditing = true;
                 document.getElementById('recordModal').style.display = 'flex';
                 setTimeout(() => document.getElementById('recordNameInput').focus(), 100);
             }
+
             window.hideRecordModal = function() {
                 document.getElementById('recordModal').style.display = 'none';
             };
+
             window.saveRecord = function() {
                 const name = document.getElementById('recordNameInput').value.trim();
                 const amount = document.getElementById('recordAmountInput').value.trim();
                 const date = document.getElementById('recordDateInput').value;
                 const note = document.getElementById('recordNoteInput').value.trim();
-                if(!name) { customAlert('请输入姓名'); return; }
-                if(!amount || isNaN(parseFloat(amount))) { customAlert('请输入有效金额'); return; }
-                if(!date) { customAlert('请选择日期'); return; }
+                if (!name) { customAlert('请输入姓名'); return; }
+                if (!amount || isNaN(parseFloat(amount))) { customAlert('请输入有效金额'); return; }
+                if (!date) { customAlert('请选择日期'); return; }
                 const folder = appData.folders.find(f => f.id === currentFolderId);
-                if(!folder) return;
-                if(isEditing && contextTarget && contextTarget.index !== null) {
-                    folder.records[contextTarget.index] = { name, amount:parseFloat(amount), date, note };
+                if (!folder) return;
+                if (isEditing && contextTarget && contextTarget.index !== null) {
+                    folder.records[contextTarget.index] = { name, amount: parseFloat(amount), date, note };
                 } else {
-                    folder.records.push({ name, amount:parseFloat(amount), date, note });
+                    folder.records.push({ name, amount: parseFloat(amount), date, note });
                 }
-                saveData();
-                hideRecordModal();
+                saveData(); hideRecordModal();
                 renderRecords(document.getElementById('searchBox')?.value || '');
             };
-            let goBackLock = false;
-            window.goBack = function() {
-                if(goBackLock) return;
-                goBackLock = true;
-                hideContextMenu();
-                if(currentView === 'folder') {
-                    currentFolderId = null;
-                    const btn = document.getElementById('addRecordBtn');
-                    if(btn) btn.remove();
-                    renderMainView();
-                } else if(currentView === 'about') {
-                    hideAbout();
-                }
-                setTimeout(() => { goBackLock = false; }, 300);
-            };
-            window.showAbout = function() {
-                currentView = 'about';
-                hideContextMenu();
-                document.getElementById('aboutPage').style.display = 'flex';
-                document.getElementById('mainContent').style.display = 'none';
-                document.getElementById('addFolderBtn').style.display = 'none';
-                const btn = document.getElementById('addRecordBtn');
-                if(btn) btn.style.display = 'none';
-                toggleNavButtons(false);
-                updateNavBar('关于');
-            };
-            window.hideAbout = function() {
-                if(currentFolderId) showFolder(currentFolderId);
-                else renderMainView();
-            };
+
+            // ---------- 导入导出 ----------
             window.showImportExport = function() {
                 hideContextMenu();
                 document.getElementById('importExportModal').style.display = 'flex';
@@ -721,33 +729,31 @@
                 document.getElementById('importFileName').textContent = '';
                 document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
             };
+
             window.hideImportExportModal = function() {
                 document.getElementById('importExportModal').style.display = 'none';
             };
+
             window.handleFileSelected = function(input) {
-                const file = input.files[0];
-                if (file) {
-                    document.getElementById('importFileName').textContent = '已选择: ' + file.name;
+                if (input.files[0]) {
+                    document.getElementById('importFileName').textContent = '已选择: ' + input.files[0].name;
                     document.getElementById('importFileLabel').textContent = '';
                 } else {
                     document.getElementById('importFileName').textContent = '';
                     document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
                 }
             };
+
             window.triggerImport = function() {
                 const fileInput = document.getElementById('importFileInput');
                 const file = fileInput.files[0];
-                if (!file) {
-                    customAlert('请先选择要导入的Excel文件');
-                    return;
-                }
-                const fileName = file.name.toLowerCase();
-                if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+                if (!file) { customAlert('请先选择Excel文件'); return; }
+                if (!file.name.toLowerCase().endsWith('.xlsx') && !file.name.toLowerCase().endsWith('.xls')) {
                     customAlert('请选择扩展名为 .xlsx 或 .xls 的Excel文件');
                     return;
                 }
                 customConfirm('导入将合并数据，跳过重复记录，确定吗？', function(confirmed) {
-                    if(!confirmed) return;
+                    if (!confirmed) return;
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         try {
@@ -770,16 +776,14 @@
                                 );
                                 if (!exists) {
                                     folder.records.push({
-                                        name,
-                                        amount: parseFloat(row['金额']) || 0,
-                                        date: row['日期'] || '',
-                                        note: row['备注'] || ''
+                                        name, amount: parseFloat(row['金额']) || 0,
+                                        date: row['日期'] || '', note: row['备注'] || ''
                                     });
                                     count++;
                                 }
                             });
                             saveData();
-                            customAlert('导入完成，新增 ' + count + ' 条记录。', function() {
+                            customAlert('导入完成，新增 ' + count + ' 条记录。', () => {
                                 if (currentView === 'main') renderMainView();
                                 else if (currentFolderId) showFolder(currentFolderId);
                             });
@@ -788,98 +792,156 @@
                             document.getElementById('importFileName').textContent = '';
                             document.getElementById('importFileLabel').textContent = '点击此处选择Excel文件';
                         } catch (err) {
-                            customAlert('解析失败：' + err.message + '\n请确认文件为有效的Excel表格。');
+                            customAlert('解析失败：' + err.message);
                         }
                     };
                     reader.readAsArrayBuffer(file);
                 });
             };
+
             window.exportData = function() {
                 const data = [];
                 appData.folders.forEach(f => {
                     f.records.forEach(r => data.push({
-                        '文件夹名': f.name, '姓名': r.name, '金额': r.amount, '日期': r.date, '备注': r.note || ''
+                        '文件夹名': f.name, '姓名': r.name, '金额': r.amount,
+                        '日期': r.date, '备注': r.note || ''
                     }));
                 });
-                if (!data.length) {
-                    customAlert('没有数据可导出');
-                    return;
-                }
+                if (!data.length) { customAlert('没有数据可导出'); return; }
                 const ws = XLSX.utils.json_to_sheet(data);
                 ws['!cols'] = [{wch:10},{wch:12},{wch:10},{wch:12},{wch:20}];
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, '人情记录');
-                const fileName = '人情记账簿数据_' + new Date().getTime() + '.xlsx';
-                XLSX.writeFile(wb, fileName);
-                customAlert('导出成功！文件：' + fileName);
+                XLSX.writeFile(wb, '人情记账簿数据_' + Date.now() + '.xlsx');
+                customAlert('导出成功！');
             };
-            // 手势处理
+
+            // ---------- 页面导航 ----------
+            window.showAbout = function() {
+                currentView = 'about';
+                hideContextMenu();
+                document.getElementById('aboutPage').style.display = 'flex';
+                document.getElementById('mainContent').style.display = 'none';
+                document.getElementById('addFolderBtn').style.display = 'none';
+                const btn = document.getElementById('addRecordBtn');
+                if (btn) btn.style.display = 'none';
+                toggleNavButtons(false);
+                updateNavBar('关于');
+            };
+
+            window.hideAbout = function() {
+                if (currentFolderId) showFolder(currentFolderId);
+                else renderMainView();
+            };
+
+            let goBackLock = false;
+            window.goBack = function() {
+                if (goBackLock) return;
+                goBackLock = true;
+                hideContextMenu();
+                if (currentView === 'folder') {
+                    currentFolderId = null;
+                    const btn = document.getElementById('addRecordBtn');
+                    if (btn) btn.remove();
+                    renderMainView();
+                } else if (currentView === 'about') {
+                    hideAbout();
+                }
+                setTimeout(() => { goBackLock = false; }, 300);
+            };
+
+            // ---------- 全局手势：边缘侧滑（双击退出/返回）----------
             document.addEventListener('touchstart', function(e) {
-                const touch = e.touches[0];
-                swipeStartX = touch.clientX;
-                swipeStartY = touch.clientY;
+                swipeStartX = e.touches[0].clientX;
+                swipeStartY = e.touches[0].clientY;
                 swipeHandled = false;
-                edgeTouch = (swipeStartX < EDGE_WIDTH || swipeStartX > window.innerWidth - EDGE_WIDTH);
+                edgeTouch = (swipeStartX < EDGE_WIDTH || swipeStartX > innerWidth - EDGE_WIDTH);
             }, { passive: false });
+
             document.addEventListener('touchmove', function(e) {
                 if (!edgeTouch || swipeHandled) return;
-                const touch = e.touches[0];
-                const dx = touch.clientX - swipeStartX;
-                const dy = touch.clientY - swipeStartY;
-                if ((swipeStartX < EDGE_WIDTH && dx > 5) || (swipeStartX > window.innerWidth - EDGE_WIDTH && dx < -5)) {
-                    if (Math.abs(dy) < 50) {
-                        e.preventDefault();
-                    }
+                const dx = e.touches[0].clientX - swipeStartX;
+                if ((swipeStartX < EDGE_WIDTH && dx > 5) || (swipeStartX > innerWidth - EDGE_WIDTH && dx < -5)) {
+                    if (Math.abs(e.touches[0].clientY - swipeStartY) < 50) e.preventDefault();
                 }
             }, { passive: false });
+
             document.addEventListener('touchend', function(e) {
                 if (swipeHandled || !edgeTouch) return;
                 const dx = e.changedTouches[0].clientX - swipeStartX;
                 const dy = e.changedTouches[0].clientY - swipeStartY;
                 if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dy) < Math.abs(dx) * 0.6) {
                     e.preventDefault();
-                    swipeHandled = true;
+                    swipeHandled = true;   // 防止打开文件夹
                     if (currentView === 'main') {
-                        customConfirm('确定要退出应用吗？', function(ok) {
-                            if(ok) {
+                        const now = Date.now();
+                        if (!lastSwipeExitTime || (now - lastSwipeExitTime) > 1000) {
+                            lastSwipeExitTime = now;
+                            showToast("再滑一次退出程序");
+                        } else {
+                            if (window.plus && plus.runtime) plus.runtime.quit();
+                            else {
                                 window.close();
-                                setTimeout(() => {
-                                    customAlert('请手动关闭浏览器标签页以退出程序。');
-                                }, 100);
+                                setTimeout(() => { if (!window.closed) showToast('请手动关闭浏览器标签页'); }, 500);
                             }
-                        });
+                        }
                     } else {
                         goBack();
                     }
                 }
                 edgeTouch = false;
             });
+
+            // ---------- 物理返回键（App环境）----------
+            if (window.plus) {
+                document.addEventListener('plusready', function() {
+                    let backFirst = null;
+                    plus.key.addEventListener('backbutton', function() {
+                        if (currentView !== 'main') goBack();
+                        else {
+                            if (!backFirst) {
+                                backFirst = Date.now();
+                                plus.nativeUI.toast("再按一次退出应用");
+                                setTimeout(() => { backFirst = null; }, 1000);
+                            } else if (Date.now() - backFirst < 1000) {
+                                plus.runtime.quit();
+                            }
+                        }
+                    });
+                });
+            }
+
+            // ---------- 弹窗背景点击关闭 ----------
             document.getElementById('folderModal').addEventListener('click', function(e) { if(e.target===this) hideFolderModal(); });
             document.getElementById('recordModal').addEventListener('click', function(e) { if(e.target===this) hideRecordModal(); });
             document.getElementById('importExportModal').addEventListener('click', function(e) { if(e.target===this) hideImportExportModal(); });
             document.getElementById('customConfirmOverlay').addEventListener('click', function(e) { if(e.target===this) this.style.display = 'none'; });
+
+            // ---------- 浏览器后退按钮 ----------
             let popLock = false;
             window.addEventListener('popstate', function(e) {
-                if(popLock) return;
+                if (popLock) return;
                 popLock = true;
                 history.pushState(null, null, location.href);
-                if(currentView !== 'main') {
-                    goBack();
-                }
+                if (currentView !== 'main') goBack();
                 setTimeout(() => { popLock = false; }, 300);
             });
             history.pushState(null, null, location.href);
+
+            // ---------- 启动 ----------
             bindGlobalItemEvents();
-            setTimeout(() => {
-                const splash = document.getElementById('splashScreen');
-                splash.style.opacity = '0';
+            window.addEventListener('load', function() {
                 setTimeout(() => {
-                    splash.style.display = 'none';
-                    document.getElementById('appContainer').style.display = 'flex';
-                    renderMainView();
-                    document.getElementById('recordDateInput').value = new Date().toISOString().split('T')[0];
-                }, 500);
-            }, 800);
+                    const splash = document.getElementById('splashScreen');
+                    splash.style.opacity = '0';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                        document.getElementById('appContainer').style.display = 'flex';
+                        renderMainView();
+                        document.getElementById('recordDateInput').value = new Date().toISOString().split('T')[0];
+                    }, 500);
+                }, 800);
+            });
         })();
     </script>
 </body>
